@@ -50,5 +50,5 @@ def get_track_records(data):
     return data.groupby("Track").min(key="Time").reset_index()
 
 
-def get_season_standings(data):
+def get_standings(data):
     return data.groupby("Player").sum()["Time"].sort_values(ascending=False)

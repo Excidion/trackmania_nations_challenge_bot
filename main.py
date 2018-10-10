@@ -1,6 +1,6 @@
 import configparser
 from utils import load_data, load_medal_times
-from calculations import get_individual_records, substitute_missing_times, sort_by_track_and_tracks_by_date, get_season_standings
+from calculations import get_individual_records, substitute_missing_times, sort_by_track_and_tracks_by_date, get_standings
 
 from calculations import  *
 from plots import *
@@ -25,14 +25,12 @@ if __name__ == "__main__":
 
     data = sort_by_track_and_tracks_by_date(data)
 
-    data
-
 
 if True:
 
     fig, ax = plt.subplots()
 
-    season_standings = get_season_standings(data)
+    season_standings = get_standings(data)
 
     # preparing for mutiple bar alignment
     bar_alignment = pd.Series({p:timedelta(0) for p in season_standings.index}, name="Time")

@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
 
-from calculations import get_season_standings
+from calculations import get_standings
 
 
 def timedelta_to_string(td, add_plus=False):
