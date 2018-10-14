@@ -36,8 +36,8 @@ def plot_total_standings(data, filename):
                            width = track_data["Time"].apply(timedelta.total_seconds),
                            left = bar_alignment.apply(timedelta.total_seconds),
                            color = trackname_to_color(track),
-                           edgecolor = "white")#track_standings_to_color(track_data))
-
+                           edgecolor = "white")
+                           #edgecolor = track_standings_to_color(track_data))
 
 
             # adding up times of plotted track times for following bar plots alignment
@@ -93,7 +93,6 @@ def plot_total_standings(data, filename):
 
         # save
         fig.tight_layout()
-
         fig.savefig(f"{PLOT_DIR}/{filename}.pdf", bbox_inches = "tight")
         fig.savefig(f"{PLOT_DIR}/{CURRENT_PLOT_NAME}.pdf", bbox_inches = "tight")
 

@@ -12,14 +12,18 @@ SQL_USER = config["SQL_LOGIN"]["USER_NAME"]
 SQL_PWD = config["SQL_LOGIN"]["PASSWORD"]
 SQL_DB = config["SQL_LOGIN"]["DATABASE"]
 
+
 MEDAL_SOURCE = config["DATA_SOURCES"]["NADEO_MEDALS"]
 MEDAL_SP = config["SAVE_POINTS"]["NADEO_MEDALS"]
+
 
 PN_MAP_SP = config["SAVE_POINTS"]["PLAYER_NAME_MAPPING"]
 try: # already some mapping saved in the past
     PLAYER_NAME_MAPPING = pd.read_pickle(PN_MAP_SP + ".pickle")
 except FileNotFoundError: # no player names mapped in the past
     PLAYER_NAME_MAPPING = pd.Series()
+
+
 
 
 def set_account_to_player_mapping(account_name, player_name):

@@ -1,7 +1,17 @@
 import pandas as pd
 from datetime import datetime, timedelta
+from utils import load_data, load_medal_times
 
 
+
+
+def calculate_complete_data():
+    raw_data = load_data()
+    nadeo_medals = load_medal_times()
+    individual_records = get_individual_records(raw_data)
+    data = substitute_missing_times(individual_records, nadeo_medals)
+    data = sort_by_track_and_tracks_by_date(data)
+    return data
 
 
 def sort_by_track_and_tracks_by_date(data):
