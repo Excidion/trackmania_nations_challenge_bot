@@ -16,7 +16,7 @@ PLOT_DIR = config["SAVE_POINTS"]["PLOT_DIR"]
 CURRENT_PLOT_NAME = config["SAVE_POINTS"]["CURRENT_PLOT"]
 
 
-def plot_total_standings(data, filename):
+def plot_total_standings(data, filename=None):
         fig, ax = plt.subplots()
 
         season_standings = get_standings(data)
@@ -71,9 +71,6 @@ def plot_total_standings(data, filename):
                     horizontalalignment = "center")
 
 
-
-
-
         # plot differences in total time
         for i, bar in enumerate(bars):
             ax.text(y = bar.get_y() + bar.get_height()/2,
@@ -85,15 +82,13 @@ def plot_total_standings(data, filename):
 
 
         # general decorating and layouting
-        ax.set_xlabel("Total Time")
-        #ax.xaxis_date()
-        #myFmt = mdates.DateFormatter("%M:%S")
-        #ax.xaxis.set_major_formatter(myFmt)
-        #ax.set_xlim(timedelta(0), season_standings.max() + timedelta(seconds = 30))
+        ax.set_xlabel("Total Time [s]")
+        fig.tight_layout()
+
 
         # save
-        fig.tight_layout()
-        fig.savefig(f"{PLOT_DIR}/{filename}.pdf", bbox_inches = "tight")
+        if not filename == None:
+            fig.savefig(f"{PLOT_DIR}/{filename}.pdf", bbox_inches = "tight")
         fig.savefig(f"{PLOT_DIR}/{CURRENT_PLOT_NAME}.pdf", bbox_inches = "tight")
 
 
@@ -147,3 +142,11 @@ def trackname_to_color(trackname):
         return mapping[index]
     except KeyError:
         return None
+
+
+
+
+if __name__ == "__main__":
+    from calculations import calculate_complete_data
+    data = calculate_complete_data()
+    plot_total_standings(data)
