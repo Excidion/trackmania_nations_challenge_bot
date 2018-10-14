@@ -12,9 +12,11 @@ def update_data():
     individual_records = get_individual_records(raw_data)
     data = substitute_missing_times(individual_records, nadeo_medals)
     data = sort_by_track_and_tracks_by_date(data)
+    return data
+
+def renew_plot(data):
     year, week = data.dropna()["Date"].max().isocalendar()[0:2]
     plot_total_standings(data, f"Meisterschaftsstand_y{year}_w{week}")
-    return data
 
 
 
@@ -28,14 +30,16 @@ if __name__ == "__main__":
         os.makedirs(config["SAVE_POINTS"]["PLOT_DIR"])
 
     nadeo_medals = load_medal_times()
-    last_SQL_update = get_last_SQL_update()
 
     data = update_data()
+    renew_plot(data)
 
+
+    last_SQL_update = get_last_SQL_update()
 
     while True:
+        time.sleep(1)
 
-        time.sleep(1) # give me some rest
         if last_SQL_update == get_last_SQL_update():
             continue
 
@@ -43,3 +47,4 @@ if __name__ == "__main__":
         last_SQL_update = get_last_SQL_update()
 
         data = update_data()
+        renew_plot(data)

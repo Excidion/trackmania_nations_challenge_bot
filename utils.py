@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime, timedelta
 import os
-import mysql.connector
+import pymysql
 import configparser
 
 config = configparser.ConfigParser()
@@ -11,7 +11,7 @@ config.read("config.ini")
 
 
 def get_last_SQL_update():
-    db = mysql.connector.connect(host = config["DATA_SOURCES"]["PLAYER_DATA"],
+    db = pymysql.connect(host = config["DATA_SOURCES"]["PLAYER_DATA"],
 				                 user = config["SQL_LOGIN"]["USER_NAME"],
 				                 passwd = config["SQL_LOGIN"]["PASSWORD"],
 				                 database = config["SQL_LOGIN"]["DATABASE"])
@@ -41,7 +41,7 @@ def load_data(location = config["DATA_SOURCES"]["PLAYER_DATA"]):
 
 
 def access_SQL_database():
-	db = mysql.connector.connect(host = config["DATA_SOURCES"]["PLAYER_DATA"],
+	db = pymysql.connect(host = config["DATA_SOURCES"]["PLAYER_DATA"],
 				                 user = config["SQL_LOGIN"]["USER_NAME"],
 				                 passwd = config["SQL_LOGIN"]["PASSWORD"],
 				                 database = config["SQL_LOGIN"]["DATABASE"])

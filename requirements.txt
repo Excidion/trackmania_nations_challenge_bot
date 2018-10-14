@@ -1,3 +1,5 @@
 pandas
 lxml
 matplotlib
+pymysql
+python-telegram-bot
