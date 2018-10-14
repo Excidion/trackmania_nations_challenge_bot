@@ -2,3 +2,4 @@ config.ini
 *.pyc
 *.pdf
 *.pickle
+snippets.txt
