@@ -26,8 +26,9 @@ if __name__ == "__main__":
     config = configparser.ConfigParser()
     config.read("config.ini")
 
-    if not os.path.exists(config["SAVE_POINTS"]["PLOT_DIR"]):
-        os.makedirs(config["SAVE_POINTS"]["PLOT_DIR"])
+    PLOT_DIR = config["SAVE_POINTS"]["PLOT_DIR"]
+    if not os.path.exists(PLOT_DIR):
+        os.makedirs(PLOT_DIR)
 
     nadeo_medals = load_medal_times()
 

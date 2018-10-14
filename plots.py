@@ -1,14 +1,19 @@
 import matplotlib
-matplotlib.use("Agg")
+matplotlib.use("Agg") # fix for running on machine without display
 import pandas as pd
 from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
+import configparser
 
 from calculations import get_standings
 
-import configparser
+
+
 config = configparser.ConfigParser()
 config.read("config.ini")
+
+PLOT_DIR = config["SAVE_POINTS"]["PLOT_DIR"]
+CURRENT_PLOT_NAME = config["SAVE_POINTS"]["CURRENT_PLOT"]
 
 
 def plot_total_standings(data, filename):
@@ -88,10 +93,9 @@ def plot_total_standings(data, filename):
 
         # save
         fig.tight_layout()
-        plot_dir = config["SAVE_POINTS"]["PLOT_DIR"]
-        current_plot_name = config["SAVE_POINTS"]["CURRENT_PLOT"]
-        fig.savefig(f"{plot_dir}/{filename}.pdf", bbox_inches = "tight")
-        fig.savefig(f"{plot_dir}/{current_plot_name}.pdf", bbox_inches = "tight")
+
+        fig.savefig(f"{PLOT_DIR}/{filename}.pdf", bbox_inches = "tight")
+        fig.savefig(f"{PLOT_DIR}/{CURRENT_PLOT_NAME}.pdf", bbox_inches = "tight")
 
 
 

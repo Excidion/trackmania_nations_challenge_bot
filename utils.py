@@ -7,14 +7,30 @@ import configparser
 config = configparser.ConfigParser()
 config.read("config.ini")
 
+SQL_HOST = config["DATA_SOURCES"]["PLAYER_DATA"]
+SQL_USER = config["SQL_LOGIN"]["USER_NAME"]
+SQL_PWD = config["SQL_LOGIN"]["PASSWORD"]
+SQL_DB = config["SQL_LOGIN"]["DATABASE"]
 
+MEDAL_SOURCE = config["DATA_SOURCES"]["NADEO_MEDALS"]
+MEDAL_SP = config["SAVE_POINTS"]["NADEO_MEDALS"]
+
+PN_MAP_SP = config["SAVE_POINTS"]["PLAYER_NAME_MAPPING"]
+try: # already some mapping saved in the past
+    PLAYER_NAME_MAPPING = pd.read_pickle(PN_MAP_SP + ".pickle")
+except FileNotFoundError: # no player names mapped in the past
+    PLAYER_NAME_MAPPING = pd.Series()
+
+
+def set_account_to_player_mapping(account_name, player_name):
+    PLAYER_NAME_MAPPING.loc[account_name] = player_name
 
 
 def get_last_SQL_update():
-    db = pymysql.connect(host = config["DATA_SOURCES"]["PLAYER_DATA"],
-				                 user = config["SQL_LOGIN"]["USER_NAME"],
-				                 passwd = config["SQL_LOGIN"]["PASSWORD"],
-				                 database = config["SQL_LOGIN"]["DATABASE"])
+    db = pymysql.connect(host = SQL_HOST,
+				         user = SQL_USER,
+				         passwd = SQL_PWD,
+				         database = SQL_DB)
 
     cur = db.cursor()
     cur.execute("SELECT max(date) FROM `records`")
@@ -22,18 +38,21 @@ def get_last_SQL_update():
 
 
 
-def load_data(location = config["DATA_SOURCES"]["PLAYER_DATA"]):
-    if os.path.exists(location):
+def load_data(location = SQL_HOST):
+    is_local_file = os.path.exists(location)
+
+    if is_local_file:
         raw_data = pd.read_csv(location)
     else:
         raw_data = access_SQL_database()
+        raw_data["Player"] = raw_data["Account"].apply(map_account_to_player)
 
     times_table = raw_data[["Track", "Date", "Player", "Time"]].copy()
     times_table["Time"] = times_table["Time"].apply(lambda x: timedelta(milliseconds=x))
 
-    try: # when source is csv file
+    if is_local_file:
         times_table["Date"] = times_table["Date"].apply(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S'))
-    except TypeError: # when source is sql directly
+    else:
         times_table["Date"] = times_table["Date"].apply(lambda x: x.to_pydatetime())
 
     times_table["Origin"] = "Player"
@@ -41,24 +60,29 @@ def load_data(location = config["DATA_SOURCES"]["PLAYER_DATA"]):
 
 
 def access_SQL_database():
-	db = pymysql.connect(host = config["DATA_SOURCES"]["PLAYER_DATA"],
-				                 user = config["SQL_LOGIN"]["USER_NAME"],
-				                 passwd = config["SQL_LOGIN"]["PASSWORD"],
-				                 database = config["SQL_LOGIN"]["DATABASE"])
+	db = pymysql.connect(host = SQL_HOST,
+				         user = SQL_USER,
+				         passwd = SQL_PWD,
+				         database = SQL_DB)
 
 	cur = db.cursor()
-	cur.execute("SELECT c.Name, p.NickName, r.Score, r.Date FROM records r INNER JOIN players p ON r.PlayerId=p.Id INNER JOIN challenges c ON r.ChallengeId=c.Id ORDER BY c.Name ASC, r.Score ASC;")
+	cur.execute("SELECT c.Name, p.Login, r.Score, r.Date FROM records r INNER JOIN players p ON r.PlayerId=p.Id INNER JOIN challenges c ON r.ChallengeId=c.Id ORDER BY c.Name ASC, r.Score ASC;")
 
 	rows = list(cur.fetchall())
-	columnlist = ['Track','Player','Time','Date']
+	columnlist = ['Track','Account','Time','Date']
 
 	return pd.DataFrame(rows, columns=columnlist)
 
 
+def map_account_to_player(account_name):
+    try:
+        return PLAYER_NAME_MAPPING[account_name]
+    except KeyError:
+        return f"<{account_name}>"
 
 
-def load_medal_times(location = config["DATA_SOURCES"]["NADEO_MEDALS"],
-                     savepoint_path = config["SAVE_POINTS"]["NADEO_MEDALS"]):
+def load_medal_times(location = MEDAL_SOURCE,
+                     savepoint_path = MEDAL_SP):
 
     # check for existing savepoint
     if os.path.exists(savepoint_path + ".pickle"):
