@@ -28,6 +28,7 @@ except FileNotFoundError: # no player names mapped in the past
 
 def set_account_to_player_mapping(account_name, player_name):
     PLAYER_NAME_MAPPING.loc[account_name] = player_name
+    PLAYER_NAME_MAPPING.to_pickle(PN_MAP_SP)
 
 
 def get_last_SQL_update():
@@ -126,3 +127,30 @@ def string_to_timedelta(string):
                       seconds = time.second,
                       microseconds = time.microsecond)
     return delta
+
+
+
+
+if __name__ == "__main__":
+    print("\nThis tool will help you set up the mapping of account names to displayed names.")
+
+    print("What's your name?")
+    player_name = input("User: ")
+
+    print("\nWhat's your accout name?")
+    account_name = input(player_name + ": ")
+
+    if (player_name == "") or (account_name == ""):
+        print("Can not map to/from empty name.\n")
+        raise SystemExit
+
+    print(f"\nThe account name \"{account_name}\" will be mapped to player \"{player_name}\". \nDo you wish to continue? (y/n)")
+    decision = input(player_name + ": ")
+    if decision == "y":
+        set_account_to_player_mapping(account_name, player_name)
+        print("\nMapping was successfully saved.")
+    elif decision == "n":
+        print("\nMapping was not saved.")
+    else:
+        print(f"\nDecision \"{decision}\" invalid.")
+        print("Mapping was not saved.")
