@@ -15,20 +15,28 @@ SQL_DB = config["SQL_LOGIN"]["DATABASE"]
 
 MEDAL_SOURCE = config["DATA_SOURCES"]["NADEO_MEDALS"]
 MEDAL_SP = config["SAVE_POINTS"]["NADEO_MEDALS"]
-
-
 PN_MAP_SP = config["SAVE_POINTS"]["PLAYER_NAME_MAPPING"]
-try: # already some mapping saved in the past
-    PLAYER_NAME_MAPPING = pd.read_pickle(PN_MAP_SP + ".pickle")
-except FileNotFoundError: # no player names mapped in the past
-    PLAYER_NAME_MAPPING = pd.Series()
 
 
 
+
+def get_player_name(account_name):
+    account_to_player_map = get_acoount_to_player_map()
+    try:
+        return account_to_player_map[account_name]
+    except KeyError:
+        return f"<{account_name}>"
 
 def set_account_to_player_mapping(account_name, player_name):
-    PLAYER_NAME_MAPPING.loc[account_name] = player_name
-    PLAYER_NAME_MAPPING.to_pickle(PN_MAP_SP)
+    account_to_player_map = get_acoount_to_player_map()
+    account_to_player_map.loc[account_name] = player_name
+    account_to_player_map.to_pickle(PN_MAP_SP)
+
+def get_acoount_to_player_map():
+    try: # already some mapping saved in the past
+        return pd.read_pickle(PN_MAP_SP + ".pickle")
+    except FileNotFoundError: # no player names mapped in the past
+        return pd.Series()
 
 
 def get_last_SQL_update():
@@ -78,11 +86,7 @@ def access_SQL_database():
 	return pd.DataFrame(rows, columns=columnlist)
 
 
-def map_account_to_player(account_name):
-    try:
-        return PLAYER_NAME_MAPPING[account_name]
-    except KeyError:
-        return f"<{account_name}>"
+
 
 
 def load_medal_times(location = MEDAL_SOURCE,
