@@ -50,7 +50,6 @@ def load_data(location = SQL_HOST):
         raw_data = pd.read_csv(location)
     else:
         raw_data = access_SQL_database()
-        raw_data["Player"] = raw_data["Account"].apply(map_account_to_player)
 
     times_table = raw_data[["Track", "Date", "Player", "Time"]].copy()
     times_table["Time"] = times_table["Time"].apply(lambda x: timedelta(milliseconds=x))
@@ -74,7 +73,7 @@ def access_SQL_database():
 	cur.execute("SELECT c.Name, p.Login, r.Score, r.Date FROM records r INNER JOIN players p ON r.PlayerId=p.Id INNER JOIN challenges c ON r.ChallengeId=c.Id ORDER BY c.Name ASC, r.Score ASC;")
 
 	rows = list(cur.fetchall())
-	columnlist = ['Track','Account','Time','Date']
+	columnlist = ['Track','Player','Time','Date']
 
 	return pd.DataFrame(rows, columns=columnlist)
 

@@ -2,50 +2,46 @@ import configparser
 from telegram.ext import Updater, CommandHandler
 import logging
 
-config = configparser.ConfigParser()
-config.read("config.ini")
+class TelegramBot():
+    def __init__(self):
+        # base configuration
+        self.config = configparser.ConfigParser()
+        self.config.read("config.ini")
+        self.GROUPCHAT_ID = self.config["TELEGRAM_BOT"]["GROUPCHAT_ID"]
+        TOKEN = self.config["TELEGRAM_BOT"]["TOKEN"]
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=logging.INFO)
+        logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                            level=logging.INFO)
 
+        # bot setup
+        self.updater = Updater(token = TOKEN)
+        self.jobs = self.updater.job_queue
+        dispatcher = self.updater.dispatcher
 
-GROUPCHAT_ID = config["TELEGRAM_BOT"]["GROUPCHAT_ID"]
-
-updater = Updater(token = config["TELEGRAM_BOT"]["TOKEN"])
-dispatcher = updater.dispatcher # mainloop process
-jobs = updater.job_queue
-
-
-# methods for use in main
-def start_bot():
-    updater.start_polling() # start mainloop
-
-def stop_bot():
-    updater.stop()
-
-def send_groupchat_message(text):
-    jobs.run_once(send_groupchat_message_job, 0, context = text)
+        dispatcher.add_handler(CommandHandler("start", self.start))
+        dispatcher.add_handler(CommandHandler("id", self.print_chat_id))
 
 
 
+    # methods for use in main
+    def start_bot(self):
+        self.updater.start_polling() # start mainloop
 
-# jobs
-def send_groupchat_message_job(bot, job):
-    bot.send_message(chat_id = GROUPCHAT_ID, text = job.context)
+    def stop_bot(self):
+        self.updater.stop()
 
+    def send_groupchat_message(self, text):
+        self.jobs.run_once(self.send_groupchat_message_job, 0, context = text)
 
-
-
-# commands
-def start(bot, update):
-    bot.send_message(chat_id=update.message.chat_id, text="Welcome to the Jungle!")
-
-def print_chat_id(bot, update):
-    chat_id = update.message.chat_id
-    bot.send_message(chat_id = chat_id, text = chat_id)
+    # associated jobs
+    def send_groupchat_message_job(self, bot, job):
+        bot.send_message(chat_id = self.GROUPCHAT_ID, text = job.context)
 
 
-start_handler = CommandHandler("start", start)
-printId_hanlder = CommandHandler("id", print_chat_id)
-dispatcher.add_handler(start_handler)
-dispatcher.add_handler(printId_hanlder)
+    # commands
+    def start(self, bot, update):
+        bot.send_message(chat_id=update.message.chat_id, text="Welcome to the Jungle!")
+
+    def print_chat_id(self, bot, update):
+        chat_id = update.message.chat_id
+        bot.send_message(chat_id = chat_id, text = chat_id)

@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 import configparser
 
 from calculations import get_standings
-
+from utils import map_account_to_player
 
 
 config = configparser.ConfigParser()
@@ -32,7 +32,7 @@ def plot_total_standings(data, filename=None):
 
 
             # colored barplots for each player & track
-            bars = ax.barh(y = track_data.index,
+            bars = ax.barh(y = track_data.index.map(map_account_to_player),
                            width = track_data["Time"].apply(timedelta.total_seconds),
                            left = bar_alignment.apply(timedelta.total_seconds),
                            color = trackname_to_color(track),
