@@ -56,7 +56,6 @@ if __name__ == "__main__":
 
             messages = compare_data_and_create_info_messages(data)
             for message in messages:
-                print(message)
                 chatbot.send_groupchat_message(message)
 
 

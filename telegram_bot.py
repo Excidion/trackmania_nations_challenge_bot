@@ -19,8 +19,8 @@ class TelegramBot():
         self.jobs = self.updater.job_queue
         dispatcher = self.updater.dispatcher
         COMMAND_MAP = {"start": self.start,
-                       "id": self.print_chat_id,
-                       "ladder": self.print_ladder}
+                       "id": self.print_chat_id}
+                       #"ladder": self.print_ladder} # TODO fix pipe (?) bug
         for command in COMMAND_MAP:
             dispatcher.add_handler(CommandHandler(command, COMMAND_MAP[command]))
 
@@ -35,6 +35,7 @@ class TelegramBot():
         self.updater.stop()
 
     def send_groupchat_message(self, text):
+        print(text)
         self.jobs.run_once(self.send_groupchat_message_job, 0, context = text)
 
     def send_groupchat_message_job(self, bot, job):
@@ -52,8 +53,7 @@ class TelegramBot():
     def print_ladder(self, bot, update):
         data = self.reciever.recv()
         ladder = get_standings(data)
-        message = ""
+        message = []
         for player in list(reversed(ladder.index)):
-            message += f"{player}: {timedelta_to_string(ladder[player])}\n"
-        for line in message.splitlines():
-            bot.send_message(chat_id=update.message.chat_id, text=line)
+            message.append(f"{player}: {timedelta_to_string(ladder[player])}")
+        bot.send_message(chat_id=update.message.chat_id, text="\n".join(message))
