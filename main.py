@@ -42,15 +42,14 @@ if __name__ == "__main__":
     transmitter, reciever = Pipe()
     chatbot = TelegramBot(reciever)
     chatbot.start_bot()
-    print("Startup successfull. Charlie Whiting is now online.")
 
 
     while True:
         try:
             last_SQL_update = get_last_SQL_update()
             data = calculate_complete_data()
-            transmitter.send(data)
             renew_plot(data)
+            transmitter.send(data) # newest info to bot
 
             while last_SQL_update == get_last_SQL_update(): # wait until there are new entries to the database
                 time.sleep(1) # check every second
@@ -62,7 +61,6 @@ if __name__ == "__main__":
 
 
         except KeyboardInterrupt:
-            print("Shutdown initiated.")
             chatbot.stop_bot() # kill background process
             raise SystemExit
 

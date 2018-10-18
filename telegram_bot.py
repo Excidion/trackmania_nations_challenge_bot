@@ -1,6 +1,7 @@
 import configparser
 from telegram.ext import Updater, CommandHandler
 from calculations import get_standings
+from plots import timedelta_to_string
 
 
 
@@ -12,14 +13,14 @@ class TelegramBot():
         self.config = configparser.ConfigParser()
         self.config.read("config.ini")
         self.GROUPCHAT_ID = self.config["TELEGRAM_BOT"]["GROUPCHAT_ID"]
-        COMMAND_MAP = {"start": self.start,
-                       "id": self.print_chat_id,
-                       "ladder": self.print_ladder}
 
         # bot setup
         self.updater = Updater(token = self.config["TELEGRAM_BOT"]["TOKEN"])
         self.jobs = self.updater.job_queue
         dispatcher = self.updater.dispatcher
+        COMMAND_MAP = {"start": self.start,
+                       "id": self.print_chat_id,
+                       "ladder": self.print_ladder}
         for command in COMMAND_MAP:
             dispatcher.add_handler(CommandHandler(command, COMMAND_MAP[command]))
 
@@ -27,8 +28,10 @@ class TelegramBot():
     # methods for use in main
     def start_bot(self):
         self.updater.start_polling() # start mainloop
+        print("Startup successfull. Telegram-Bot is now online.")
 
     def stop_bot(self):
+        print("Shutdown initiated.")
         self.updater.stop()
 
     def send_groupchat_message(self, text):
@@ -48,5 +51,9 @@ class TelegramBot():
 
     def print_ladder(self, bot, update):
         data = self.reciever.recv()
-        ladder = list(reversed(get_standings(data).index))
-        bot.send_message(chat_id=update.message.chat_id, text="\n".join(ladder))
+        ladder = get_standings(data)
+        message = ""
+        for player in list(reversed(ladder.index)):
+            message += f"{player}: {timedelta_to_string(ladder[player])}\n"
+        for line in message.splitlines():
+            bot.send_message(chat_id=update.message.chat_id, text=line)
