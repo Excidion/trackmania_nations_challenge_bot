@@ -1,6 +1,7 @@
 import configparser
 import time
 import os
+from multiprocessing import Pipe
 
 from utils import load_data, load_medal_times, get_last_SQL_update
 from calculations import calculate_complete_data, get_standings
@@ -14,6 +15,18 @@ def renew_plot(data):
     year, week = data.dropna()["Date"].max().isocalendar()[0:2]
     plot_total_standings(data, f"Meisterschaftsstand_y{year}_w{week}")
 
+def compare_data_and_create_info_messages(old_data):
+    messages = []
+    new_data = calculate_complete_data()
+    new_entries = new_data[~new_data.isin(old_data)].dropna()
+    for row_index, entry in new_entries.iterrows():
+        player_name = entry["Player"]
+        new_record = timedelta_to_string(entry["Time"])
+        track = entry["Track"]
+        message = f"{track}: {player_name} scored a new record of {new_record}!"
+        messages.append(message)
+    return messages
+
 
 
 
@@ -26,7 +39,8 @@ if __name__ == "__main__":
     if not os.path.exists(PLOT_DIR):
         os.makedirs(PLOT_DIR)
 
-    chatbot = TelegramBot()
+    transmitter, reciever = Pipe()
+    chatbot = TelegramBot(reciever)
     chatbot.start_bot()
     print("Startup successfull. Charlie Whiting is now online.")
 
@@ -35,18 +49,14 @@ if __name__ == "__main__":
         try:
             last_SQL_update = get_last_SQL_update()
             data = calculate_complete_data()
+            transmitter.send(data)
             renew_plot(data)
 
             while last_SQL_update == get_last_SQL_update(): # wait until there are new entries to the database
                 time.sleep(1) # check every second
 
-            new_data = calculate_complete_data()
-            new_entries = new_data[~new_data.isin(data)].dropna()
-            for i, entry in new_entries.iterrows():
-                player_name = entry["Player"]
-                new_record = timedelta_to_string(entry["Time"])
-                track = entry["Track"]
-                message = f"{track}: {player_name} scored a new record of {new_record}!"
+            messages = compare_data_and_create_info_messages(data)
+            for message in messages:
                 print(message)
                 chatbot.send_groupchat_message(message)
 

@@ -30,7 +30,7 @@ def get_player_name(account_name):
 def set_account_to_player_mapping(account_name, player_name):
     account_to_player_map = get_acoount_to_player_map()
     account_to_player_map.loc[account_name] = player_name
-    account_to_player_map.to_pickle(PN_MAP_SP)
+    account_to_player_map.to_pickle(PN_MAP_SP + ".pickle")
 
 def get_acoount_to_player_map():
     try: # already some mapping saved in the past
