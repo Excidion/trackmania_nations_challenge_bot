@@ -19,8 +19,8 @@ class TelegramBot():
         self.jobs = self.updater.job_queue
         dispatcher = self.updater.dispatcher
         COMMAND_MAP = {"start": self.start,
-                       "id": self.print_chat_id}
-                       #"ladder": self.print_ladder} # TODO fix pipe (?) bug
+                       "id": self.print_chat_id,
+                       "ladder": self.print_ladder}
         for command in COMMAND_MAP:
             dispatcher.add_handler(CommandHandler(command, COMMAND_MAP[command]))
 

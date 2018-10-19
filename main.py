@@ -49,9 +49,9 @@ if __name__ == "__main__":
             last_SQL_update = get_last_SQL_update()
             data = calculate_complete_data()
             renew_plot(data)
-            transmitter.send(data) # newest info to bot
 
             while last_SQL_update == get_last_SQL_update(): # wait until there are new entries to the database
+                transmitter.send(data) # newest info to bot
                 time.sleep(1) # check every second
 
             messages = compare_data_and_create_info_messages(data)
