@@ -1,7 +1,9 @@
 import configparser
 from telegram.ext import Updater, CommandHandler
+
 from calculations import get_standings
 from plots import timedelta_to_string
+from utils import get_player_name
 
 
 
@@ -53,7 +55,11 @@ class TelegramBot():
     def print_ladder(self, bot, update):
         data = self.reciever.recv()
         ladder = get_standings(data)
-        message = []
-        for player in list(reversed(ladder.index)):
-            message.append(f"{player}: {timedelta_to_string(ladder[player])}")
-        bot.send_message(chat_id=update.message.chat_id, text="\n".join(message))
+        message_lines = []
+        for i, player in enumerate(list(reversed(ladder.index))):
+            line = f"{i+1}) "
+            line += get_player_name(player) + ":  "
+            line += timedelta_to_string(ladder[player]) + " "
+            line += timedelta_to_string(ladder.diff(-1)[player], add_plus=True)
+            message_lines.append(line)
+        bot.send_message(chat_id=update.message.chat_id, text="\n".join(message_lines))
