@@ -1,7 +1,6 @@
 import configparser
 import time
 import os
-from multiprocessing import Pipe
 
 from utils import load_data, load_medal_times, get_last_SQL_update
 from calculations import calculate_complete_data, get_standings
@@ -39,8 +38,7 @@ if __name__ == "__main__":
     if not os.path.exists(PLOT_DIR):
         os.makedirs(PLOT_DIR)
 
-    transmitter, reciever = Pipe()
-    chatbot = TelegramBot(reciever)
+    chatbot = TelegramBot()
     chatbot.start_bot()
 
 
@@ -51,7 +49,6 @@ if __name__ == "__main__":
             renew_plot(data)
 
             while last_SQL_update == get_last_SQL_update(): # wait until there are new entries to the database
-                transmitter.send(data) # newest info to bot
                 time.sleep(1) # check every second
 
             messages = compare_data_and_create_info_messages(data)

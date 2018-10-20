@@ -17,7 +17,9 @@ CURRENT_PLOT_NAME = config["SAVE_POINTS"]["CURRENT_PLOT"]
 
 
 def plot_total_standings(data, filename=None):
-        fig, ax = plt.subplots()
+        width = data["Track"].nunique() + 3
+        height = data["Player"].nunique()
+        fig, ax = plt.subplots(figsize=(width, height))
 
         season_standings = get_standings(data)
 
@@ -36,8 +38,7 @@ def plot_total_standings(data, filename=None):
                            width = track_data["Time"].apply(timedelta.total_seconds),
                            left = bar_alignment.apply(timedelta.total_seconds),
                            color = trackname_to_color(track),
-                           edgecolor = "white")
-                           #edgecolor = track_standings_to_color(track_data))
+                           edgecolor = fig.patch.get_facecolor())
 
 
             # adding up times of plotted track times for following bar plots alignment
@@ -58,7 +59,7 @@ def plot_total_standings(data, filename=None):
                         s = label,
                         horizontalalignment = "center",
                         verticalalignment = "center",
-                        color = "white")
+                        color = fig.patch.get_facecolor())
 
 
             # labeling groups of bars with track names
@@ -89,7 +90,12 @@ def plot_total_standings(data, filename=None):
         # save
         if not filename == None:
             fig.savefig(f"{PLOT_DIR}/{filename}.pdf", bbox_inches = "tight")
-        fig.savefig(f"{PLOT_DIR}/{CURRENT_PLOT_NAME}.pdf", bbox_inches = "tight")
+
+        fig.savefig(f"{PLOT_DIR}/{CURRENT_PLOT_NAME}.png",
+                    dpi = 225,
+                    transparent = True,
+                    bbox_inches = "tight",
+                    pad_inches = 0)
 
 
 
