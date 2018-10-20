@@ -1,5 +1,6 @@
 import matplotlib
 matplotlib.use("Agg") # fix for running on machine without display
+import matplotlib.ticker as ticker
 import pandas as pd
 from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
@@ -14,6 +15,8 @@ config.read("config.ini")
 
 PLOT_DIR = config["SAVE_POINTS"]["PLOT_DIR"]
 CURRENT_PLOT_NAME = config["SAVE_POINTS"]["CURRENT_PLOT"]
+
+
 
 
 def plot_total_standings(data, filename=None):
@@ -40,7 +43,6 @@ def plot_total_standings(data, filename=None):
                            color = trackname_to_color(track),
                            edgecolor = fig.patch.get_facecolor())
 
-
             # adding up times of plotted track times for following bar plots alignment
             bar_alignment += track_data["Time"]
 
@@ -65,9 +67,9 @@ def plot_total_standings(data, filename=None):
             # labeling groups of bars with track names
             ax.text(y = bar.get_y() + bar.get_height()*1.33,
                     x = bar.get_x() + bar.get_width()/2,
-                    s = track,
+                    s = track.split("-")[0],
                     color = trackname_to_color(track),
-                    rotation = 90,
+                    #rotation = 45,
                     verticalalignment = "bottom",
                     horizontalalignment = "center")
 
@@ -83,7 +85,12 @@ def plot_total_standings(data, filename=None):
 
 
         # general decorating and layouting
-        ax.set_xlabel("Total Time [s]")
+        ax.set_xlabel("Total Time")
+        major_tick_stepwidth = 60
+        minor_tick_stepwidth = 15#major_tick_stepwidth/2//15*15
+        ax.xaxis.set_major_locator(ticker.MultipleLocator(major_tick_stepwidth))
+        ax.xaxis.set_minor_locator(ticker.MultipleLocator(minor_tick_stepwidth))
+        ax.xaxis.set_major_formatter(timedelta_formatter)
         fig.tight_layout()
 
 
@@ -98,6 +105,10 @@ def plot_total_standings(data, filename=None):
                     pad_inches = 0)
 
 
+
+@ticker.FuncFormatter
+def timedelta_formatter(x, pos):
+    return timedelta_to_string(timedelta(seconds=x)).split(".")[0]
 
 
 def timedelta_to_string(td, add_plus=False):
