@@ -23,20 +23,20 @@ def sort_by_track_and_tracks_by_date(data):
 def substitute_missing_times(data, medals, remove_non_nadeo=True):
     all_players = data["Player"].unique()
 
-    for track in data["Track"].unique():
+    for track, track_data in data.groupby("Track"):
 
         if track not in medals.index.values: # track is not a nadeo track
             if remove_non_nadeo:
                 data = data.loc[data["Track"] != track]
             continue
 
-        players_with_time = data.loc[data["Track"] == track, "Player"].unique()
+        players_with_time = track_data["Player"].unique()
         players_without_time = list(set(all_players) - set(players_with_time))
 
         if len(players_without_time) == 0: # everybody already has a time
             continue
 
-        slowest_time = data.groupby("Track").max().loc[track, "Time"]
+        slowest_time = track_data["Time"].max()
         slower_medals = medals.loc[track].where(medals.loc[track] > slowest_time).dropna()
 
         if len(slower_medals) == 0: # nobody has beaten any medal time / not all have beaten Bronze
