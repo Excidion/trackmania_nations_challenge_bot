@@ -3,7 +3,7 @@ import time
 import os
 
 from utils import load_data, load_medal_times, get_last_SQL_update, get_player_name
-from calculations import calculate_complete_data, get_standings
+from calculations import calculate_complete_data, get_standings, get_current_track_data
 from plots import plot_total_standings, timedelta_to_string
 from telegram_bot import TelegramBot
 
@@ -25,9 +25,8 @@ def compare_data_and_create_info_messages(old_data):
 def info_about_current_weeks_ladder_changes(old_data, new_data):
     messages = []
 
-    current_track = new_data.loc[new_data["Date"] == new_data["Date"].dropna().max(), "Track"].values[0]
-    new_data = new_data[new_data["Track"] == current_track]
-    old_data = old_data[old_data["Track"] == current_track]
+    new_data = get_current_track_data(new_data)
+    old_data = get_current_track_data(old_data)
 
     new_ladder = get_standings(new_data)
     old_ladder = get_standings(old_data)

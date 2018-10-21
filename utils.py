@@ -25,7 +25,7 @@ def get_player_name(account_name):
     try:
         return account_to_player_map[account_name]
     except KeyError:
-        return f"<{account_name}>"
+        return f"#{account_name}#"
 
 def set_account_to_player_mapping(account_name, player_name):
     account_to_player_map = get_acoount_to_player_map()

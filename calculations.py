@@ -53,7 +53,9 @@ def substitute_missing_times(data, medals, remove_non_nadeo=True):
     return data.sort_values("Track").reset_index(drop=True)
 
 
-
+def get_current_track_data(data):
+    current_track = data.loc[data["Date"] == data["Date"].dropna().max(), "Track"].values[0]
+    return data[data["Track"] == current_track]
 
 def get_individual_records(data):
     return data.groupby("Player").apply(get_track_records).reset_index(drop=True)
