@@ -1,5 +1,5 @@
 import configparser
-from telegram.ext import Updater, CommandHandler, BaseFilter
+from telegram.ext import Updater, CommandHandler, MessageHandler, BaseFilter, Filters
 
 from calculations import get_standings, calculate_complete_data
 from plots import timedelta_to_string
@@ -28,6 +28,7 @@ class TelegramBot():
         self.updater = Updater(token = config["TELEGRAM_BOT"]["TOKEN"])
         self.jobs = self.updater.job_queue
         dispatcher = self.updater.dispatcher
+        dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, self.welcome_action))
         COMMAND_MAP = {"start": self.start,
                        "id": self.print_chat_id,
                        "ladder": self.print_ladder}
@@ -35,6 +36,11 @@ class TelegramBot():
             dispatcher.add_handler(CommandHandler(command,
                                                   COMMAND_MAP[command],
                                                   filters = InGroupChatFilter()))
+
+    def welcome_action(self, bot, update):
+        for new_user in update.message.new_chat_members:
+            bot.send_message(chat_id=new_user.id, text="Welcome to the Jungle!")
+
 
 
     # methods for use in main
