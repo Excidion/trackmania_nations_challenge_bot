@@ -1,29 +1,40 @@
 import configparser
-from telegram.ext import Updater, CommandHandler
+from telegram.ext import Updater, CommandHandler, BaseFilter
 
 from calculations import get_standings, calculate_complete_data
 from plots import timedelta_to_string
 from utils import get_player_name
+
+config = configparser.ConfigParser()
+config.read("config.ini")
+GROUPCHAT_ID = config["TELEGRAM_BOT"]["GROUPCHAT_ID"]
+
+
+
+
+class InGroupChatFilter(BaseFilter):
+    def filter(self, message):
+        id =  message.from_user.id
+        status = message.chat.bot.get_chat_member(chat_id=GROUPCHAT_ID, user_id=id).status
+        return status in ["creator", "administrator", "member", "restricted"]
 
 
 
 
 class TelegramBot():
     def __init__(self):
-        # base configuration
-        self.config = configparser.ConfigParser()
-        self.config.read("config.ini")
-        self.GROUPCHAT_ID = self.config["TELEGRAM_BOT"]["GROUPCHAT_ID"]
-
         # bot setup
-        self.updater = Updater(token = self.config["TELEGRAM_BOT"]["TOKEN"])
+        self.GROUPCHAT_ID = GROUPCHAT_ID
+        self.updater = Updater(token = config["TELEGRAM_BOT"]["TOKEN"])
         self.jobs = self.updater.job_queue
         dispatcher = self.updater.dispatcher
         COMMAND_MAP = {"start": self.start,
                        "id": self.print_chat_id,
                        "ladder": self.print_ladder}
         for command in COMMAND_MAP:
-            dispatcher.add_handler(CommandHandler(command, COMMAND_MAP[command]))
+            dispatcher.add_handler(CommandHandler(command,
+                                                  COMMAND_MAP[command],
+                                                  filters = InGroupChatFilter()))
 
 
     # methods for use in main
@@ -36,11 +47,9 @@ class TelegramBot():
         self.updater.stop()
 
     def send_groupchat_message(self, text):
-        print(text)
-        self.jobs.run_once(self.send_groupchat_message_job, 0, context = text)
+        print("Posted to Groupchat:", text)
+        self.updater.bot.send_message(chat_id=self.GROUPCHAT_ID, text=text)
 
-    def send_groupchat_message_job(self, bot, job):
-        bot.send_message(chat_id = self.GROUPCHAT_ID, text = job.context)
 
 
     # commands
