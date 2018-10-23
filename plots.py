@@ -37,7 +37,7 @@ def plot_total_standings(data, filename=None):
 
 
             # colored barplots for each player & track
-            bars = ax.barh(y = track_data.index.map(get_player_name),
+            bars = ax.barh(y = track_data.index,
                            width = track_data["Time"].apply(timedelta.total_seconds),
                            left = bar_alignment.apply(timedelta.total_seconds),
                            color = trackname_to_color(track),
@@ -65,7 +65,7 @@ def plot_total_standings(data, filename=None):
 
 
             # labeling groups of bars with track names
-            ax.text(y = bar.get_y() + bar.get_height()*1.33,
+            ax.text(y = bar.get_y() + bar.get_height()*1.5,
                     x = bar.get_x() + bar.get_width()/2,
                     s = track.split("-")[0],
                     color = trackname_to_color(track),
@@ -85,6 +85,7 @@ def plot_total_standings(data, filename=None):
 
 
         # general decorating and layouting
+        plt.yticks(track_data.index, track_data.index.map(get_player_name))
         ax.set_xlabel("Total Time")
         major_tick_stepwidth = 60
         minor_tick_stepwidth = 15#major_tick_stepwidth/2//15*15
