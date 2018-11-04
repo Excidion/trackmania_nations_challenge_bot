@@ -29,9 +29,11 @@ class TelegramBot():
         self.jobs = self.updater.job_queue
         dispatcher = self.updater.dispatcher
         dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, self.welcome_action))
-        COMMAND_MAP = {"help": self.help,
+        COMMAND_MAP = {"start": self.help,
+                       "help": self.help,
                        "chat_id": self.print_chat_id,
-                       "ladder": self.print_ladder}
+                       "ladder": self.print_ladder,
+                       "graph": self.print_plot_link}
         for command in COMMAND_MAP:
             dispatcher.add_handler(CommandHandler(command,
                                                   COMMAND_MAP[command],
@@ -67,6 +69,11 @@ class TelegramBot():
         chat_id = update.message.chat_id
         bot.send_message(chat_id = chat_id, text = chat_id)
 
+    def print_plot_link(self, bot, update):
+        bot.send_photo(chat_id = update.message.chat_id,
+                       photo = "https://poekelbude.ddns.net/current_standings.png")
+
+
     def print_ladder(self, bot, update):
         data = get_current_track_data(calculate_complete_data())
         ladder = get_standings(data)
@@ -76,8 +83,11 @@ class TelegramBot():
             line = f"{i+1}) "
             line += get_player_name(player) + ": "
             line += timedelta_to_string(ladder[player]) + " "
-            line += timedelta_to_string(ladder.diff(-1)[player], add_plus=True)
             message_lines.append(line)
+
+        max_linelength = max([len(line) for line in message_lines])
+        missing_spaces = [(max_linelength-len(line)) for line in message_lines]
+        message_lines = [(":"+spaces*" ").join(line.split(":")) for spaces, line in zip(missing_spaces, message_lines)]
 
         message = "\n".join(message_lines)
         message = f"<pre>{message}</pre>"

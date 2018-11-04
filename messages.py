@@ -1,6 +1,6 @@
 from calculations import get_standings, get_current_track_data
 from utils import get_player_name
-from plot import timedelta_to_string
+from plots import timedelta_to_string
 
 
 def info_about_current_weeks_ladder_changes(old_data, new_data):
@@ -46,5 +46,5 @@ def info_about_new_times(old_data, new_data):
         track = entry["Track"]
         message = f"{track}: {player_name} scored a new record of {new_record}!"
         messages.append(message)
-        
+
     return messages
