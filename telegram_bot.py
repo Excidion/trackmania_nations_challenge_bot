@@ -1,5 +1,6 @@
 import configparser
 from telegram.ext import Updater, CommandHandler, MessageHandler, BaseFilter, Filters
+from datetime import datetime
 
 from calculations import get_standings, calculate_complete_data, get_current_track_data
 from plots import timedelta_to_string
@@ -70,8 +71,9 @@ class TelegramBot():
         bot.send_message(chat_id = chat_id, text = chat_id)
 
     def print_plot_link(self, bot, update):
+        ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         bot.send_photo(chat_id = update.message.chat_id,
-                       photo = "https://poekelbude.ddns.net/current_standings.png")
+                       photo = f"https://poekelbude.ddns.net/current_standings.png?a={ts}")
 
 
     def print_ladder(self, bot, update):
