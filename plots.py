@@ -50,9 +50,10 @@ def plot_total_standings(data, filename=None):
             for i, bar in enumerate(bars):
 
                 # choose label
-                label = timedelta_to_string(track_data["Time"][i]) # calculated time
-                if track_data["Origin"][i] != "Player":
-                    label = track_data["Origin"][i]
+                if track_data["Origin"][i] == "Player":
+                    label = timedelta_to_string(track_data["Time"][i])
+                else: # no time was set by player
+                    label = track_data["Origin"][i] # label with medal name
 
 
                 # label each bar
@@ -69,7 +70,6 @@ def plot_total_standings(data, filename=None):
                     x = bar.get_x() + bar.get_width()/2,
                     s = track.split("-")[0],
                     color = trackname_to_color(track),
-                    #rotation = 45,
                     verticalalignment = "bottom",
                     horizontalalignment = "center")
 
@@ -87,10 +87,8 @@ def plot_total_standings(data, filename=None):
         # general decorating and layouting
         plt.yticks(track_data.index, track_data.index.map(get_player_name))
         ax.set_xlabel("Total Time")
-        major_tick_stepwidth = 60
-        minor_tick_stepwidth = 15#major_tick_stepwidth/2//15*15
-        ax.xaxis.set_major_locator(ticker.MultipleLocator(major_tick_stepwidth))
-        ax.xaxis.set_minor_locator(ticker.MultipleLocator(minor_tick_stepwidth))
+        ax.xaxis.set_major_locator(ticker.MultipleLocator(60))
+        ax.xaxis.set_minor_locator(ticker.MultipleLocator(15))
         ax.xaxis.set_major_formatter(timedelta_formatter)
         fig.tight_layout()
 
