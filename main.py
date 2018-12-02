@@ -16,9 +16,9 @@ def renew_plot(data):
 
 def compare_data_and_create_info_messages(old_data):
     new_data = calculate_complete_data()
-    messages = []
-    messages += messages.info_about_new_times(old_data, new_data)
-    messages += messages.info_about_current_weeks_ladder_changes(old_data, new_data)
+    text = []
+    text += messages.info_about_new_times(old_data, new_data)
+    text += messages.info_about_current_weeks_ladder_changes(old_data, new_data)
     return messages
 
 

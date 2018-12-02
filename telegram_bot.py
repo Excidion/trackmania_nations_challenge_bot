@@ -1,5 +1,5 @@
 import configparser
-from telegram import ReplyKeyboardMarkup
+from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, MessageHandler, BaseFilter, Filters, ConversationHandler
 from datetime import datetime
 
@@ -217,11 +217,11 @@ class TelegramBot():
             account = user_data["account"]
             name =  user_data["name"]
             set_account_to_player_mapping(account, name)
-            update.message.reply_text(f"TM-Account \"{account}\" has been mapped to \"{name}\".")
+            update.message.reply_text(f"TM-Account \"{account}\" has been mapped to \"{name}\".",
+                                      reply_markup=ReplyKeyboardRemove())
         else:
-            update.message.reply_text("Action canceled.")
-
-        update.message.reply_text(reply_markup=ReplyKeyboardRemove())
+            update.message.reply_text("Action canceled.",
+                                      reply_markup=ReplyKeyboardRemove())
         return ConversationHandler.END
 
 
