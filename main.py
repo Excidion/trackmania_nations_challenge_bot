@@ -19,7 +19,7 @@ def compare_data_and_create_info_messages(old_data):
     text = []
     text += messages.info_about_new_times(old_data, new_data)
     text += messages.info_about_current_weeks_ladder_changes(old_data, new_data)
-    return messages
+    return text
 
 
 
