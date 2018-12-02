@@ -1,23 +1,40 @@
 import configparser
-from telegram.ext import Updater, CommandHandler, MessageHandler, BaseFilter, Filters
+from telegram import ReplyKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, MessageHandler, BaseFilter, Filters, ConversationHandler
 from datetime import datetime
 
 from calculations import get_standings, calculate_complete_data, get_current_track_data
 from plots import timedelta_to_string
-from utils import get_player_name
+from utils import get_player_name, set_account_to_player_mapping
 
 config = configparser.ConfigParser()
 config.read("config.ini")
 GROUPCHAT_ID = config["TELEGRAM_BOT"]["GROUPCHAT_ID"]
 
+OPENING_MESSAGE = "\n".join([
+    "Hello and welcome to our weekly TrackMania Nations Challenge!",
+    "I manage most of what is happening on and around the racetrack.\n",
+    "There are multiple ways in which I can help you:",
+    "Type /commands for a list of commands that I understand.",
+    "If you are new to the competition I recommend starting with /register so I know who you are (in game)!"])
 
 
 
-class InGroupChatFilter(BaseFilter):
+class UserInGroupChatFilter(BaseFilter):
     def filter(self, message):
         id =  message.from_user.id
         status = message.chat.bot.get_chat_member(chat_id=GROUPCHAT_ID, user_id=id).status
         return status in ["creator", "administrator", "member", "restricted"]
+
+class ConversationNotInGroupChatFilter(BaseFilter):
+    def filter(self, message):
+        chat_id = message.chat.id
+        if int(chat_id) == int(GROUPCHAT_ID):
+            message.chat.bot.send_message(chat_id = chat_id,
+                                          text = "I will not do this in public, contact me in a private message.")
+            return False # don't handle this conversation in public chat
+        else:
+            return True
 
 
 
@@ -29,20 +46,46 @@ class TelegramBot():
         self.updater = Updater(token = config["TELEGRAM_BOT"]["TOKEN"])
         self.jobs = self.updater.job_queue
         dispatcher = self.updater.dispatcher
-        dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, self.welcome_action))
+
+        # welcome action
+        dispatcher.add_handler(MessageHandler(
+            Filters.status_update.new_chat_members,
+            self.welcome_action))
+
+        # simple commands
         COMMAND_MAP = {"start": self.help,
                        "help": self.help,
                        "chat_id": self.print_chat_id,
                        "ladder": self.print_ladder,
-                       "graph": self.print_plot_link}
+                       "graph": self.print_plot_link,
+                       "link": self.print_website_link}
         for command in COMMAND_MAP:
             dispatcher.add_handler(CommandHandler(command,
                                                   COMMAND_MAP[command],
-                                                  filters = InGroupChatFilter()))
+                                                  filters = UserInGroupChatFilter()))
 
+        # advanced commands
+        dispatcher.add_handler(ConversationHandler(
+            entry_points = [CommandHandler("register", self.start_registration,
+                                           filters = (UserInGroupChatFilter() and
+                                                      ConversationNotInGroupChatFilter()))],
+            states = {0: [MessageHandler(Filters.text,
+                                         self.store_name,
+                                         pass_user_data=True)],
+                      1: [MessageHandler(Filters.text,
+                                         self.store_account,
+                                         pass_user_data=True)],
+                      2: [MessageHandler(Filters.text,
+                                       self.bool_decision_to_save,
+                                       pass_user_data=True)]},
+            fallbacks = [CommandHandler("cancel", self.cancel)]))
+
+
+
+    # send this to every user that joins the group
     def welcome_action(self, bot, update):
         for new_user in update.message.new_chat_members:
-            bot.send_message(chat_id=new_user.id, text="Welcome to the Jungle!")
+            bot.send_message(chat_id=new_user.id, text=OPENING_MESSAGE)
 
 
 
@@ -61,19 +104,24 @@ class TelegramBot():
 
 
 
-    # commands
+    # simple commands
     def help(self, bot, update):
-        bot.send_message(chat_id=update.message.chat_id,
-                         text = "Welcome to the Jungle!")
+        bot.send_message(chat_id=update.message.chat_id, text=OPENING_MESSAGE)
 
     def print_chat_id(self, bot, update):
         chat_id = update.message.chat_id
         bot.send_message(chat_id = chat_id, text = chat_id)
 
     def print_plot_link(self, bot, update):
-        ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        webserver = config["DATA_SOURCES"]["PLAYER_DATA"]
+        filename = config["SAVE_POINTS"]["CURRENT_PLOT"]
+        ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # timestamp to avoid using cached old thumbnails
         bot.send_photo(chat_id = update.message.chat_id,
-                       photo = f"https://poekelbude.ddns.net/current_standings.png?a={ts}")
+                       photo = f"https://{webserver}/{filename}.png?a={ts}")
+
+    def print_website_link(self, bot, update):
+        webserver = config["DATA_SOURCES"]["PLAYER_DATA"]
+        bot.send_message(chat_id = update.message.chat_id, text = f"https://{webserver}")
 
 
     def print_ladder(self, bot, update):
@@ -96,3 +144,54 @@ class TelegramBot():
         bot.send_message(chat_id = update.message.chat_id,
                          text = message,
                          parse_mode = "HTML")
+
+
+    # commands for advanced conversations
+    def start_registration(self, bot, update):
+        user_account = update.message.from_user["username"]
+        first_name = update.message.from_user["first_name"]
+        print(f"{user_account} ({first_name}) started registration.")
+        bot.send_message(chat_id = update.message.chat_id,
+                         text = "\n".join(["I will take you through the registration process. You can abort the process anytime via /cancel ",
+                                           "\nTo get started I need your first name.",
+                                           "This name will be displayed on all rankings and graphs."]))
+        return 0
+
+    def store_name(self, bot, update, user_data):
+        webserver = config["DATA_SOURCES"]["PLAYER_DATA"]
+        user_data["name"] = update.message.text
+        bot.send_message(chat_id = update.message.chat_id,
+                         text = "\n".join(["Next up I need your TrackMania account name.",
+                                           "You can see your account name when logging into TrackMania."]))
+        bot.send_photo(chat_id = update.message.chat_id,
+                       photo = f"https://{webserver}/register_instruction.png")
+        return 1
+
+    def store_account(self, bot, update, user_data):
+        account = update.message.text
+        user_data["account"] = account
+        name = user_data["name"]
+        bot.send_message(chat_id = update.message.chat_id,
+                         text = f"I will now link the TrackMania account \"{account}\" to \"{name}\".\nDo you want to proceed?",
+                         reply_markup = ReplyKeyboardMarkup([["Yes", "No"]], one_time_keyboard=True))
+
+        return 2
+
+    def bool_decision_to_save(self, bot, update, user_data):
+        reply = update.message.text
+        if reply.lower() == "yes":
+            account = user_data["account"]
+            name =  user_data["name"]
+            set_account_to_player_mapping(account, name)
+            update.message.reply_text(f"TM-Account \"{account}\" has been mapped to \"{name}\".")
+        else:
+            update.message.reply_text("Action canceled.")
+
+        update.message.reply_text(reply_markup=ReplyKeyboardRemove())
+        return ConversationHandler.END
+
+
+
+    def cancel(self, bot, update):
+        update.message.reply_text("Action canceled.")
+        return ConversationHandler.END

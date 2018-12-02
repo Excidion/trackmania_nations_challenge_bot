@@ -46,8 +46,7 @@ if __name__ == "__main__":
             while last_SQL_update == get_last_SQL_update(): # wait until there are new entries to the database
                 time.sleep(1) # check every second
 
-            messages = compare_data_and_create_info_messages(data)
-            for message in messages:
+            for message in compare_data_and_create_info_messages(data):
                 chatbot.send_groupchat_message(message)
 
 

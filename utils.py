@@ -31,6 +31,7 @@ def get_player_name(account_name):
 def set_account_to_player_mapping(account_name, player_name):
     account_to_player_map = get_acoount_to_player_map()
     account_to_player_map.loc[account_name] = player_name
+    print(f"TM-Account \"{account_name}\" has been mapped to \"{player_name}\".")
     account_to_player_map.to_pickle(PN_MAP_SP + ".pickle")
 
 def get_acoount_to_player_map():
@@ -152,7 +153,6 @@ if __name__ == "__main__":
     decision = input(player_name + ": ")
     if decision == "y":
         set_account_to_player_mapping(account_name, player_name)
-        print("\nMapping was successfully saved.")
     elif decision == "n":
         print("\nMapping was not saved.")
     else:
