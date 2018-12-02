@@ -44,7 +44,7 @@ def info_about_new_times(old_data, new_data):
         player_name = entry["Player"]
         new_record = timedelta_to_string(entry["Time"])
         track = entry["Track"]
-        message = f"{track}: {player_name} scored a new record of {new_record}!"
+        message = f"{track}: {get_player_name(player_name)} scored a new record of {new_record}!"
         messages.append(message)
 
     return messages
