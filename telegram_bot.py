@@ -3,7 +3,7 @@ from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, MessageHandler, BaseFilter, Filters, ConversationHandler
 from datetime import datetime
 
-from calculations import get_standings, calculate_complete_data, get_current_track_data
+from messages import get_ladder_as_html
 from plots import timedelta_to_string
 from utils import get_player_name, set_account_to_player_mapping
 
@@ -111,6 +111,18 @@ class TelegramBot():
         print("Posted to Groupchat:", text)
         self.updater.bot.send_message(chat_id=GROUPCHAT_ID, text=text)
 
+    def send_results_to_groupchat(self):
+        webserver = config["DATA_SOURCES"]["PLAYER_DATA"]
+        filename = config["SAVE_POINTS"]["CURRENT_PLOT"]
+        ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # timestamp to avoid using cached old thumbnails
+        message = get_ladder_as_html()
+
+        bot.send_message(chat_id = GROUPCHAT_ID,
+                         text = message,
+                         parse_mode = "HTML")
+        bot.send_photo(chat_id = update.message.chat_id,
+                       photo = f"https://{webserver}/{filename}.png?a={ts}")
+        print("Posted results to groupchat.")
 
 
     # simple commands
@@ -159,22 +171,7 @@ class TelegramBot():
 
 
     def print_ladder(self, bot, update):
-        data = get_current_track_data(calculate_complete_data())
-        ladder = get_standings(data)
-
-        message_lines = [data["Track"].unique()[0]]
-        for i, player in enumerate(list(reversed(ladder.index))):
-            line = f"{i+1}) "
-            line += get_player_name(player) + ": "
-            line += timedelta_to_string(ladder[player]) + " "
-            message_lines.append(line)
-
-        max_linelength = max([len(line) for line in message_lines])
-        missing_spaces = [(max_linelength-len(line)) for line in message_lines]
-        message_lines = [(":"+spaces*" ").join(line.split(":")) for spaces, line in zip(missing_spaces, message_lines)]
-
-        message = "\n".join(message_lines)
-        message = f"<pre>{message}</pre>"
+        message = get_ladder_as_html()
         bot.send_message(chat_id = update.message.chat_id,
                          text = message,
                          parse_mode = "HTML")

@@ -9,6 +9,8 @@ import configparser
 from calculations import get_standings
 from utils import get_player_name
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning) # warning with tight layout
 
 config = configparser.ConfigParser()
 config.read("config.ini")

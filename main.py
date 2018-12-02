@@ -1,6 +1,7 @@
 import configparser
 import time
 import os
+from datetime import datetime
 
 from utils import load_data, load_medal_times, get_last_SQL_update, get_player_name
 from calculations import calculate_complete_data, get_standings, get_current_track_data
@@ -39,12 +40,19 @@ if __name__ == "__main__":
 
     while True:
         try:
+            current_week = datetime.now().isocalendar()[1]
             last_SQL_update = get_last_SQL_update()
             data = calculate_complete_data()
             renew_plot(data)
 
             while last_SQL_update == get_last_SQL_update(): # wait until there are new entries to the database
                 time.sleep(1) # check every second
+
+                if not current_week == datetime.now().isocalendar()[1]:
+                    bot.send_groupchat_message("Rien ne va plus!")
+                    bot.send_results_to_groupchat()
+                    break
+
 
             for message in compare_data_and_create_info_messages(data):
                 chatbot.send_groupchat_message(message)

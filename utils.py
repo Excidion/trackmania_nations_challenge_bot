@@ -34,6 +34,9 @@ def set_account_to_player_mapping(account_name, player_name):
     print(f"TM-Account \"{account_name}\" has been mapped to \"{player_name}\".")
     account_to_player_map.to_pickle(PN_MAP_SP + ".pickle")
 
+    from plots import plot_total_standings
+    plot_total_standings(load_data())
+
 def get_acoount_to_player_map():
     try: # already some mapping saved in the past
         return pd.read_pickle(PN_MAP_SP + ".pickle")
