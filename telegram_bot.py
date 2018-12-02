@@ -42,7 +42,6 @@ class ConversationNotInGroupChatFilter(BaseFilter):
 class TelegramBot():
     def __init__(self):
         # bot setup
-        self.GROUPCHAT_ID = GROUPCHAT_ID
         self.updater = Updater(token = config["TELEGRAM_BOT"]["TOKEN"])
         self.jobs = self.updater.job_queue
         dispatcher = self.updater.dispatcher
@@ -53,16 +52,26 @@ class TelegramBot():
             self.welcome_action))
 
         # simple commands
-        COMMAND_MAP = {"start": self.help,
-                       "help": self.help,
-                       "chat_id": self.print_chat_id,
+        COMMAND_MAP = {"chat_id": self.print_chat_id,
                        "ladder": self.print_ladder,
                        "graph": self.print_plot_link,
                        "link": self.print_website_link}
+        PRIVATE_COMMAND_MAP = {"start": self.help,
+                               "help": self.help,
+                               "commands": self.print_commands,
+                               "server": self.print_join_instructions}
+
+
         for command in COMMAND_MAP:
             dispatcher.add_handler(CommandHandler(command,
                                                   COMMAND_MAP[command],
                                                   filters = UserInGroupChatFilter()))
+        for command in PRIVATE_COMMAND_MAP:
+            dispatcher.add_handler(CommandHandler(command,
+                                                  PRIVATE_COMMAND_MAP[command],
+                                                  filters = (UserInGroupChatFilter() and
+                                                  ConversationNotInGroupChatFilter())))
+
 
         # advanced commands
         dispatcher.add_handler(ConversationHandler(
@@ -100,7 +109,7 @@ class TelegramBot():
 
     def send_groupchat_message(self, text):
         print("Posted to Groupchat:", text)
-        self.updater.bot.send_message(chat_id=self.GROUPCHAT_ID, text=text)
+        self.updater.bot.send_message(chat_id=GROUPCHAT_ID, text=text)
 
 
 
@@ -121,7 +130,32 @@ class TelegramBot():
 
     def print_website_link(self, bot, update):
         webserver = config["DATA_SOURCES"]["PLAYER_DATA"]
-        bot.send_message(chat_id = update.message.chat_id, text = f"https://{webserver}")
+        bot.send_message(chat_id = update.message.chat_id,
+                         text = f"https://{webserver}")
+
+    def print_join_instructions(self, bot, update):
+        webserver = config["DATA_SOURCES"]["PLAYER_DATA"]
+        server_name = config["DATA_SOURCES"]["TM_SERVER_NAME"]
+        pwd = config["DATA_SOURCES"]["TM_SERVER_PWD"]
+        id = update.message.chat_id
+        bot.send_message(chat_id=id, text="To join the server you have to enter the following link to TrackMania internal browser:")
+        bot.send_message(chat_id=id, text=f"tmtp://#addfavourite={server_name}")
+        bot.send_photo(chat_id=id, photo=f"https://{webserver}/tm_browser.png")
+        bot.send_photo(chat_id=id, photo=f"https://{webserver}/tm_addfavo.png")
+        bot.send_message(chat_id=id, text="This will add the server to your list of favourites.")
+        bot.send_message(chat_id=id, text=f"The servers password is \"{pwd}\".")
+
+    def print_commands(self, bot, update):
+        message = "\n".join(["These are the commands I know and what they do:",
+                             "/ladder - Shows this weeks rankings.",
+                             "/graph - Shows the current total rankings.",
+                             "/link - Shows the link to the website.",
+                             "\nThe following commands can just be handled in private messages with me:",
+                             "/server - Shows you how to connect to the game server.",
+                             "/register - Make your name appear in the rankings. Recommended, if you haven't done this yet."])
+
+        bot.send_message(chat_id = update.message.chat_id,
+                         text = message)
 
 
     def print_ladder(self, bot, update):
