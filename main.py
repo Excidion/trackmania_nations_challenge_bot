@@ -15,6 +15,14 @@ def renew_plot(data):
     year, week = data.dropna()["Date"].max().isocalendar()[0:2]
     plot_total_standings(data, f"Meisterschaftsstand_y{year}_w{week}")
 
+    current_track = get_current_track_data(data)
+    current_track.sort_values("Time", inplace=True)
+    current_track["Player"] = current_track["Player"].apply(get_player_name)
+    current_track["Interval"] = current_track["Time"].diff().apply(timedelta_to_string, add_plus=True)
+    current_track["Time"] = current_track["Time"].apply(timedelta_to_string)
+    current_track[["Player", "Time", "Interval"]].to_csv("ladder.csv", index=False, header=False)
+
+
 def compare_data_and_create_info_messages(old_data):
     new_data = calculate_complete_data()
     text = []
