@@ -12,6 +12,8 @@ def info_about_current_weeks_ladder_changes(old_data, new_data):
     new_ladder = get_standings(new_data)
     old_ladder = get_standings(old_data)
 
+    current_track = new_data["Track"].unique()[0]
+
     try:
         changes = new_ladder.index != old_ladder.index
     except ValueError: # a new player is in the database.
