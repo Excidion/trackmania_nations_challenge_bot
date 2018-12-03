@@ -49,8 +49,8 @@ if __name__ == "__main__":
                 time.sleep(1) # check every second
 
                 if not current_week == datetime.now().isocalendar()[1]:
-                    bot.send_groupchat_message("Rien ne va plus!")
-                    bot.send_results_to_groupchat()
+                    chatbot.send_groupchat_message("Rien ne va plus!")
+                    chatbot.send_results_to_groupchat()
                     break
 
 
