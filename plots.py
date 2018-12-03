@@ -22,7 +22,7 @@ CURRENT_PLOT_NAME = config["SAVE_POINTS"]["CURRENT_PLOT"]
 
 
 def plot_total_standings(data, filename=None):
-        width = data["Track"].nunique() + 3
+        width = data["Track"].nunique()*1.1
         height = data["Player"].nunique()
         fig, ax = plt.subplots(figsize=(width, height))
 
@@ -131,6 +131,11 @@ def timedelta_to_string(td, add_plus=False):
     digits = string.split(":")
     digits = ["0" + d if len(d.split(".")[0])==1 else d for d in digits]
     string = ":".join(digits)
+
+    pre, milli = string.split(".")
+    if len(milli) == 1:
+        milli = "0" + milli
+    string = f"{pre}.{milli}"
 
     if add_plus:
         string = "+" + string

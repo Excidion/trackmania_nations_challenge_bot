@@ -35,7 +35,8 @@ def set_account_to_player_mapping(account_name, player_name):
     account_to_player_map.to_pickle(PN_MAP_SP + ".pickle")
 
     from plots import plot_total_standings
-    plot_total_standings(load_data())
+    from main import renew_plot
+    renew_plot(load_data()) # redo plots with freshly added names
 
 def get_acoount_to_player_map():
     try: # already some mapping saved in the past
@@ -49,10 +50,15 @@ def get_last_SQL_update():
 				         user = SQL_USER,
 				         passwd = SQL_PWD,
 				         database = SQL_DB)
+    try:
+        cur = db.cursor()
+        cur.execute("SELECT max(date) FROM `records`")
+        last_update = cur.fetchall()[0][0]
+    except Exception as e:
+        print(e)
 
-    cur = db.cursor()
-    cur.execute("SELECT max(date) FROM `records`")
-    return cur.fetchall()[0][0]
+    db.close()
+    return last_update
 
 
 
@@ -77,18 +83,20 @@ def load_data(location = SQL_HOST):
 
 
 def access_SQL_database():
-	db = pymysql.connect(host = SQL_HOST,
+    db = pymysql.connect(host = SQL_HOST,
 				         user = SQL_USER,
 				         passwd = SQL_PWD,
 				         database = SQL_DB)
+    try:
+        cur = db.cursor()
+        cur.execute("SELECT c.Name, p.Login, r.Score, r.Date FROM records r INNER JOIN players p ON r.PlayerId=p.Id INNER JOIN challenges c ON r.ChallengeId=c.Id ORDER BY c.Name ASC, r.Score ASC;")
+        rows = list(cur.fetchall())
+        data = pd.DataFrame(rows, columns=['Track','Player','Time','Date'])
+    except Exception as e:
+        print(e)
 
-	cur = db.cursor()
-	cur.execute("SELECT c.Name, p.Login, r.Score, r.Date FROM records r INNER JOIN players p ON r.PlayerId=p.Id INNER JOIN challenges c ON r.ChallengeId=c.Id ORDER BY c.Name ASC, r.Score ASC;")
-
-	rows = list(cur.fetchall())
-	columnlist = ['Track','Player','Time','Date']
-
-	return pd.DataFrame(rows, columns=columnlist)
+    db.close()
+    return data
 
 
 
