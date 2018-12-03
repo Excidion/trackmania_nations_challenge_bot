@@ -22,7 +22,7 @@ CURRENT_PLOT_NAME = config["SAVE_POINTS"]["CURRENT_PLOT"]
 
 
 def plot_total_standings(data, filename=None):
-        width = data["Track"].nunique()*1.1
+        width = data["Track"].nunique() + 3
         height = data["Player"].nunique()
         fig, ax = plt.subplots(figsize=(width, height))
 
@@ -89,8 +89,20 @@ def plot_total_standings(data, filename=None):
         # general decorating and layouting
         plt.yticks(track_data.index, track_data.index.map(get_player_name))
         ax.set_xlabel("Total Time")
-        ax.xaxis.set_major_locator(ticker.MultipleLocator(60))
-        ax.xaxis.set_minor_locator(ticker.MultipleLocator(15))
+
+
+        max_time = season_standings.max().total_seconds()
+        if max_time > 2*60:
+            major_ticks = 60
+            minor_ticks = 15
+        elif max_time > 60:
+            major_ticks = 30
+            minor_ticks = 10
+        elif max_time > 30:
+            major_ticks = 15
+            minor_ticks = 5
+        ax.xaxis.set_major_locator(ticker.MultipleLocator(major_ticks))
+        ax.xaxis.set_minor_locator(ticker.MultipleLocator(minor_ticks))
         ax.xaxis.set_major_formatter(timedelta_formatter)
         fig.tight_layout()
 
@@ -109,7 +121,10 @@ def plot_total_standings(data, filename=None):
 
 @ticker.FuncFormatter
 def timedelta_formatter(x, pos):
-    return timedelta_to_string(timedelta(seconds=x)).split(".")[0]
+    pre_string = timedelta_to_string(timedelta(seconds=x)).split(".")[0]
+    if len(pre_string) == 2:
+        pre_string = f"00:{pre_string}"
+    return pre_string
 
 
 def timedelta_to_string(td, add_plus=False):
