@@ -101,6 +101,10 @@ def plot_total_standings(data, filename=None):
         elif max_time > 30:
             major_ticks = 15
             minor_ticks = 5
+        else:
+            major_ticks = 10
+            minor_ticks = 2
+
         ax.xaxis.set_major_locator(ticker.MultipleLocator(major_ticks))
         ax.xaxis.set_minor_locator(ticker.MultipleLocator(minor_ticks))
         ax.xaxis.set_major_formatter(timedelta_formatter)
