@@ -46,20 +46,7 @@ def get_acoount_to_player_map():
 
 
 def get_last_SQL_update():
-    db = pymysql.connect(host = SQL_HOST,
-				         user = SQL_USER,
-				         passwd = SQL_PWD,
-				         database = SQL_DB)
-    try:
-        cur = db.cursor()
-        cur.execute("SELECT max(date) FROM `records`")
-        last_update = cur.fetchall()[0][0]
-    except Exception as e:
-        print(e)
-
-    db.close()
-    return last_update
-
+    return access_SQL_database("SELECT max(date) FROM `records`")[0][0]
 
 
 def load_data(location = SQL_HOST):
@@ -68,7 +55,7 @@ def load_data(location = SQL_HOST):
     if is_local_file:
         raw_data = pd.read_csv(location)
     else:
-        raw_data = access_SQL_database()
+        raw_data = download_data()
 
     times_table = raw_data[["Track", "Date", "Player", "Time"]].copy()
     times_table["Time"] = times_table["Time"].apply(lambda x: timedelta(milliseconds=x))
@@ -81,30 +68,27 @@ def load_data(location = SQL_HOST):
     times_table["Origin"] = "Player"
     return times_table
 
+def download_data():
+    query = "SELECT c.Name, p.Login, r.Score, r.Date FROM records r INNER JOIN players p ON r.PlayerId=p.Id INNER JOIN challenges c ON r.ChallengeId=c.Id ORDER BY c.Name ASC, r.Score ASC;"
+    rows = list(access_SQL_database(query))
+    return pd.DataFrame(rows, columns=['Track','Player','Time','Date'])
 
-def access_SQL_database():
+
+def access_SQL_database(query):
     db = pymysql.connect(host = SQL_HOST,
 				         user = SQL_USER,
 				         passwd = SQL_PWD,
 				         database = SQL_DB)
-    try:
-        cur = db.cursor()
-        cur.execute("SELECT c.Name, p.Login, r.Score, r.Date FROM records r INNER JOIN players p ON r.PlayerId=p.Id INNER JOIN challenges c ON r.ChallengeId=c.Id ORDER BY c.Name ASC, r.Score ASC;")
-        rows = list(cur.fetchall())
-        data = pd.DataFrame(rows, columns=['Track','Player','Time','Date'])
-    except Exception as e:
-        print(e)
-
+    cur = db.cursor()
+    cur.execute(query)
+    result = cur.fetchall()
     db.close()
-    return data
+    return result
 
 
 
 
-
-def load_medal_times(location = MEDAL_SOURCE,
-                     savepoint_path = MEDAL_SP):
-
+def load_medal_times(location = MEDAL_SOURCE, savepoint_path = MEDAL_SP):
     # check for existing savepoint
     if os.path.exists(savepoint_path + ".pickle"):
         return pd.read_pickle(savepoint_path + ".pickle")
