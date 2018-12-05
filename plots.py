@@ -107,7 +107,7 @@ def plot_total_standings(data, filename=None):
         fig.tight_layout()
 
 
-        # save
+        # save & close
         if not filename == None:
             fig.savefig(f"{PLOT_DIR}/{filename}.pdf", bbox_inches = "tight")
 
@@ -116,6 +116,7 @@ def plot_total_standings(data, filename=None):
                     transparent = True,
                     bbox_inches = "tight",
                     pad_inches = 0)
+        plt.close(fig)
 
 
 
