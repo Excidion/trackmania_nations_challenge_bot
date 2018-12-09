@@ -116,12 +116,15 @@ class TelegramBot():
         filename = config["SAVE_POINTS"]["CURRENT_PLOT"]
         ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # timestamp to avoid using cached old thumbnails
         message = get_ladder_as_html()
-
-        bot.send_message(chat_id = GROUPCHAT_ID,
-                         text = message,
-                         parse_mode = "HTML")
-        bot.send_photo(chat_id = update.message.chat_id,
-                       photo = f"https://{webserver}/{filename}.png?a={ts}")
+        self.updater.bot.send_message(chat_id = GROUPCHAT_ID,
+                                      text = "Here are this weeks results!")
+        self.updater.bot.send_message(chat_id = GROUPCHAT_ID,
+                                      text = message,
+                                      parse_mode = "HTML")
+        self.updater.bot.send_message(chat_id = GROUPCHAT_ID,
+                                      text = "And this is the influence on the total rankings:")
+        self.updater.bot.send_photo(chat_id = GROUPCHAT_ID,
+                                    photo = f"https://{webserver}/{filename}.png?a={ts}")
         print("Posted results to groupchat.")
 
 
