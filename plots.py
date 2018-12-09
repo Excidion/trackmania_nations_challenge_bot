@@ -48,15 +48,13 @@ def plot_total_standings(data, filename=None):
             # adding up times of plotted track times for following bar plots alignment
             bar_alignment += track_data["Time"]
 
+
             # labeling bars with time information
             for i, bar in enumerate(bars):
-
-                # choose label
                 if track_data["Origin"][i] == "Player":
                     label = timedelta_to_string(track_data["Time"][i])
                 else: # no time was set by player
                     label = track_data["Origin"][i] # label with medal name
-
 
                 # label each bar
                 ax.text(y = bar.get_y() + bar.get_height()/2,
@@ -86,10 +84,11 @@ def plot_total_standings(data, filename=None):
                     horizontalalignment = "left")
 
 
-        # general decorating and layouting
+        # axis decorating
         plt.yticks(track_data.index, track_data.index.map(get_player_name))
         ax.set_xlabel("Total Time")
-
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
 
         max_time = season_standings.max().total_seconds()
         if max_time > 2*60:
@@ -103,7 +102,7 @@ def plot_total_standings(data, filename=None):
             minor_ticks = 5
         else:
             major_ticks = 10
-            minor_ticks = 2
+            minor_ticks = 1
 
         ax.xaxis.set_major_locator(ticker.MultipleLocator(major_ticks))
         ax.xaxis.set_minor_locator(ticker.MultipleLocator(minor_ticks))
@@ -126,10 +125,10 @@ def plot_total_standings(data, filename=None):
 
 @ticker.FuncFormatter
 def timedelta_formatter(x, pos):
-    pre_string = timedelta_to_string(timedelta(seconds=x)).split(".")[0]
-    if len(pre_string) == 2:
-        pre_string = f"00:{pre_string}"
-    return pre_string
+    string = timedelta_to_string(timedelta(seconds=x)).split(".")[0]
+    if len(string) == 2:
+        string = f"00:{string}"
+    return string
 
 
 def timedelta_to_string(td, add_plus=False):
@@ -139,23 +138,23 @@ def timedelta_to_string(td, add_plus=False):
     hours = int(td.seconds//3600)
     minutes = int(td.seconds//60%60)
     seconds = int(td.seconds-hours*3600-minutes*60)
-    milliseconds = int(td.microseconds/10**4)
+    centiseconds = int(td.microseconds/10**4)
 
     if hours > 0:
-        string =  f"{hours}:{minutes}:{seconds}.{milliseconds}"
+        string =  f"{hours}:{minutes}:{seconds}.{centiseconds}"
     elif minutes > 0:
-        string =  f"{minutes}:{seconds}.{milliseconds}"
+        string =  f"{minutes}:{seconds}.{centiseconds}"
     else:
-        string =  f"{seconds}.{milliseconds}"
+        string =  f"{seconds}.{centiseconds}"
 
     digits = string.split(":")
     digits = ["0" + d if len(d.split(".")[0])==1 else d for d in digits]
     string = ":".join(digits)
 
-    pre, milli = string.split(".")
-    if len(milli) == 1:
-        milli = "0" + milli
-    string = f"{pre}.{milli}"
+    pre, centi = string.split(".")
+    if len(centi) == 1:
+        centi = "0" + centi
+    string = f"{pre}.{centi}"
 
     if add_plus:
         string = "+" + string
