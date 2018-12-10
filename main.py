@@ -45,13 +45,14 @@ if __name__ == "__main__":
     if not os.path.exists(PLOT_DIR):
         os.makedirs(PLOT_DIR)
 
+    current_week = datetime.now().isocalendar()[1]
+
     chatbot = TelegramBot()
     chatbot.start_bot()
 
 
     while True:
         try:
-            current_week = datetime.now().isocalendar()[1]
             last_SQL_update = get_last_SQL_update()
             data = calculate_complete_data()
             renew_plot(data)
@@ -62,6 +63,7 @@ if __name__ == "__main__":
                 if not current_week == datetime.now().isocalendar()[1]:
                     chatbot.send_groupchat_message("Rien ne va plus!")
                     chatbot.send_results_to_groupchat()
+                    current_week = datetime.now().isocalendar()[1]
                     break
 
 
