@@ -54,6 +54,8 @@ class TelegramBot():
         # simple commands
         COMMAND_MAP = {"chat_id": self.print_chat_id,
                        "ladder": self.print_ladder,
+                       "week": self.print_ladder,
+                       "total": self.print_plot_link,
                        "graph": self.print_plot_link,
                        "link": self.print_website_link}
         PRIVATE_COMMAND_MAP = {"start": self.help,
@@ -162,8 +164,8 @@ class TelegramBot():
 
     def print_commands(self, bot, update):
         message = "\n".join(["These are the commands I know and what they do:",
-                             "/ladder - Shows this weeks rankings.",
-                             "/graph - Shows the current total rankings.",
+                             "/week - Shows this weeks rankings.",
+                             "/total - Shows the graph of the total season rankings.",
                              "/link - Shows the link to the website.",
                              "\nThe following commands can just be handled in private messages with me:",
                              "/server - Shows you how to connect to the game server.",
