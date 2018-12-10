@@ -53,6 +53,7 @@ def info_about_new_times(old_data, new_data):
 
 def get_ladder_as_html():
     data = get_current_track_data(calculate_complete_data())
+    data = data[data["Origin"] == "Player"]
     ladder = get_standings(data)
 
     message_lines = [data["Track"].unique()[0]]

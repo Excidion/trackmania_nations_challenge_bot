@@ -115,11 +115,11 @@ class TelegramBot():
         webserver = config["DATA_SOURCES"]["PLAYER_DATA"]
         filename = config["SAVE_POINTS"]["CURRENT_PLOT"]
         ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # timestamp to avoid using cached old thumbnails
-        message = get_ladder_as_html()
+
         self.updater.bot.send_message(chat_id = GROUPCHAT_ID,
                                       text = "Here are this weeks results!")
         self.updater.bot.send_message(chat_id = GROUPCHAT_ID,
-                                      text = message,
+                                      text = get_ladder_as_html(),
                                       parse_mode = "HTML")
         self.updater.bot.send_message(chat_id = GROUPCHAT_ID,
                                       text = "And this is the influence on the total rankings:")

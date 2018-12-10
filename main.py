@@ -14,8 +14,11 @@ import messages
 def renew_plot(data):
     year, week = data.dropna()["Date"].max().isocalendar()[0:2]
     plot_total_standings(data, f"Meisterschaftsstand_y{year}_w{week}")
+    create_ladder_csv(data)
 
+def create_ladder_csv(data):
     current_track = get_current_track_data(data)
+    current_track = current_track[current_track["Origin"] == "Player"]
     current_track.sort_values("Time", inplace=True)
     current_track["Player"] = current_track["Player"].apply(get_player_name)
     current_track["Interval"] = current_track["Time"].diff().apply(timedelta_to_string, add_plus=True)
