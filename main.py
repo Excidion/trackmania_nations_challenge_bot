@@ -3,8 +3,8 @@ import time
 import os
 from datetime import datetime
 
-from utils import load_data, load_medal_times, get_last_SQL_update, get_player_name
-from calculations import calculate_complete_data, get_standings, get_current_track_data
+from utils import get_last_SQL_update, get_player_name
+from calculations import calculate_complete_data, get_current_track_data
 from plots import plot_total_standings, timedelta_to_string
 from telegram_bot import TelegramBot
 import messages
