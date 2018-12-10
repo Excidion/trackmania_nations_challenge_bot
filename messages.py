@@ -10,19 +10,17 @@ def info_about_current_weeks_ladder_changes(old_data, new_data):
     new_data = new_data[new_data["Origin"] == "Player"]
     new_ladder = get_standings(new_data)
 
-    old_data = get_current_track_data(old_data)
+    current_track = new_data["Track"].unique()[0]
+
+    old_data = old_data[old_data["Track"] == current_track]
     old_data = old_data[old_data["Origin"] == "Player"]
     old_ladder = get_standings(old_data)
 
-    current_track = new_data["Track"].unique()[0]
-
     try:
         changes = new_ladder.index != old_ladder.index
-    except ValueError: # a new player is in the database.
-        new_players = list(set(new_ladder.index) - set(old_ladder.index))
-        new_ladder = new_ladder.loc[~new_ladder.index.isin(new_players)] # ignore his first entries.
-        if len(new_ladder) == 0: # old ladder was longer -> new track
-            return [] # don' create messages about medal time
+    except ValueError: # a new player/track is in the database.
+        player_overlap = list(set(new_ladder.index) | set(old_ladder.index))
+        new_ladder = new_ladder.loc[new_ladder.index.isin(player_overlap)]
         changes = new_ladder.index != old_ladder.index
 
     new_ladder = new_ladder[changes].reset_index().reset_index().set_index("Player")
