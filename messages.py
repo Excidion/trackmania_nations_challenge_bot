@@ -16,13 +16,10 @@ def info_about_current_weeks_ladder_changes(old_data, new_data):
     old_data = old_data[old_data["Origin"] == "Player"]
     old_ladder = get_standings(old_data)
 
-    try:
-        changes = new_ladder.index != old_ladder.index
-    except ValueError: # a new player/track is in the database.
-        player_overlap = list(set(new_ladder.index) | set(old_ladder.index))
-        new_ladder = new_ladder.loc[new_ladder.index.isin(player_overlap)]
-        old_ladder = old_ladder.loc[old_ladder.index.isin(player_overlap)]
-        changes = new_ladder.index != old_ladder.index
+    player_overlap = list(set(new_ladder.index) & set(old_ladder.index))
+    new_ladder = new_ladder.loc[new_ladder.index.isin(player_overlap)]
+    old_ladder = old_ladder.loc[old_ladder.index.isin(player_overlap)]
+    changes = new_ladder.index != old_ladder.index
 
     new_ladder = new_ladder[changes].reset_index().reset_index().set_index("Player")
     old_ladder = old_ladder[changes].reset_index().reset_index().set_index("Player")
