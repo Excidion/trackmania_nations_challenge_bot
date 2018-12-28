@@ -31,10 +31,8 @@ def plot_total_standings(data, filename=None):
         # preparing for mutiple bar alignment
         bar_alignment = pd.Series({p:timedelta(0) for p in season_standings.index}, name="Time")
 
-        for track in data["Track"].unique():
-
-            # subset for track, ordered by total times
-            track_data = data.loc[data["Track"] == track]
+        for track, track_data in data.groupby("Track"):
+            # order subset by total times
             track_data = track_data.set_index("Player").loc[season_standings.index]
 
 
