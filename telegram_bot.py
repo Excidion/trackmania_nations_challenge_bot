@@ -114,7 +114,7 @@ class TelegramBot():
         self.updater.bot.send_message(chat_id=GROUPCHAT_ID, text=text)
 
     def send_results_to_groupchat(self):
-        webserver = config["DATA_SOURCES"]["PLAYER_DATA"]
+        webserver = config["DATA_SOURCES"]["WEBSERVER"]
         filename = config["SAVE_POINTS"]["CURRENT_PLOT"]
         ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # timestamp to avoid using cached old thumbnails
 
@@ -139,19 +139,19 @@ class TelegramBot():
         bot.send_message(chat_id = chat_id, text = chat_id)
 
     def print_plot_link(self, bot, update):
-        webserver = config["DATA_SOURCES"]["PLAYER_DATA"]
+        webserver = config["DATA_SOURCES"]["WEBSERVER"]
         filename = config["SAVE_POINTS"]["CURRENT_PLOT"]
         ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # timestamp to avoid using cached old thumbnails
         bot.send_photo(chat_id = update.message.chat_id,
                        photo = f"https://{webserver}/{filename}.png?a={ts}")
 
     def print_website_link(self, bot, update):
-        webserver = config["DATA_SOURCES"]["PLAYER_DATA"]
+        webserver = config["DATA_SOURCES"]["WEBSERVER"]
         bot.send_message(chat_id = update.message.chat_id,
                          text = f"https://{webserver}")
 
     def print_join_instructions(self, bot, update):
-        webserver = config["DATA_SOURCES"]["PLAYER_DATA"]
+        webserver = config["DATA_SOURCES"]["WEBSERVER"]
         server_name = config["DATA_SOURCES"]["TM_SERVER_NAME"]
         pwd = config["DATA_SOURCES"]["TM_SERVER_PWD"]
         id = update.message.chat_id
@@ -194,7 +194,7 @@ class TelegramBot():
         return 0
 
     def store_name(self, bot, update, user_data):
-        webserver = config["DATA_SOURCES"]["PLAYER_DATA"]
+        webserver = config["DATA_SOURCES"]["WEBSERVER"]
         user_data["name"] = update.message.text
         bot.send_message(chat_id = update.message.chat_id,
                          text = "\n".join(["Next up I need your TrackMania account name.",
