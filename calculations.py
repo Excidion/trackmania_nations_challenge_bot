@@ -20,13 +20,12 @@ def sort_by_track_and_tracks_by_date(data):
     ordered_data = data.set_index("Track").loc[track_order.index].reset_index()
     return ordered_data
 
-def substitute_missing_times(data, medals, remove_non_nadeo=True):
+def substitute_missing_times(data, medals, remove_unknown=True):
     all_players = data["Player"].unique()
 
     for track, track_data in data.groupby("Track"):
-
-        if track not in medals.index.values: # track is not a nadeo track
-            if remove_non_nadeo:
+        if track not in medals.index.values: # track's medals not in database
+            if remove_unknown:
                 data = data.loc[data["Track"] != track]
             continue
 
