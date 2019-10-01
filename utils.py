@@ -74,9 +74,36 @@ def load_data(location = SQL_HOST):
 
 
 def download_data():
-    query = "SELECT c.Name, p.Login, r.Score, r.Date FROM records r INNER JOIN players p ON r.PlayerId=p.Id INNER JOIN challenges c ON r.ChallengeId=c.Id ORDER BY c.Name ASC, r.Score ASC;"
+    query = "SELECT c.Id as Id
+		, c.Uid as Uid
+		, c.Name as TrackName
+		, c.Author as TrackAuthor
+		, c.BronzeTime as TrackBronzeTime
+		, c.SilverTime as TrackSilverTime
+		, c.GoldTime as TrackGoldTime
+		, c.AuthorTime as TrackAuthorTime
+		, p.Login as PlayerLogin
+		, r.Score as Score
+		, r.Date as Date
+		FROM records r 
+		INNER JOIN players p 
+		ON r.PlayerId=p.Id 
+		INNER JOIN challenges c 
+		ON r.ChallengeId=c.Id 
+		ORDER BY c.Name ASC
+		, r.Score ASC;"
     rows = list(access_SQL_database(query))
-    return pd.DataFrame(rows, columns=['Track','Player','Time','Date'])
+    return pd.DataFrame(rows, columns=['Id'
+				       ,'Uid'
+				       ,'Track'
+				       ,'TrackAuthor'
+				       ,'TrackBronzeTime'
+				       ,'TrackSilverTime'
+				       ,'TrackGoldTime'
+				       ,'TrackAuthorTime'
+				       ,'Player'
+				       ,'Time'
+				       ,'Date'])
 
 
 def access_SQL_database(query):
