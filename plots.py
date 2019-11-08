@@ -22,7 +22,7 @@ CURRENT_PLOT_NAME = config["SAVE_POINTS"]["CURRENT_PLOT"]
 
 
 def plot_total_standings(data, filename=None):
-    width = data["Track"].nunique() + 3
+    width = data["track_id"].nunique() + 3
     height = data["Player"].nunique()
     fig, ax = plt.subplots(figsize=(width, height))
 
@@ -31,16 +31,17 @@ def plot_total_standings(data, filename=None):
     # preparing for mutiple bar alignment
     bar_alignment = pd.Series({p:timedelta(0) for p in season_standings.index}, name="Time")
 
-    for track, track_data in data.groupby("Track", sort=False):
+    for track, track_data in data.groupby("track_id", sort=False):
         # order subset by total times
         track_data = track_data.set_index("Player").loc[season_standings.index]
-
+        trackname = track_data["Track"].iloc[0]
+        nadeo = track_data["author"].iloc[0] == "Nadeo"
 
         # colored barplots for each player & track
         bars = ax.barh(y = track_data.index,
                        width = track_data["Time"].apply(timedelta.total_seconds),
                        left = bar_alignment.apply(timedelta.total_seconds),
-                       color = trackname_to_color(track),
+                       color = trackname_to_color(trackname, nadeo),
                        edgecolor = fig.patch.get_facecolor())
 
         # adding up times of plotted track times for following bar plots alignment
@@ -66,8 +67,8 @@ def plot_total_standings(data, filename=None):
         # labeling groups of bars with track names
         ax.text(y = bar.get_y() + bar.get_height()*1.5,
                 x = bar.get_x() + bar.get_width()/2,
-                s = track.split("-")[0],
-                color = trackname_to_color(track),
+                s = trackname.split("-")[0] if nadeo else trackname,
+                color = trackname_to_color(trackname, nadeo),
                 verticalalignment = "bottom",
                 horizontalalignment = "center")
 
@@ -170,18 +171,17 @@ def track_standings_to_color(track_data):
     return [mapping[index] if index in mapping.keys() else "white" for index in track_standings_index]
 
 
-def trackname_to_color(trackname):
-    mapping = {"A": "#c1c1c1",
-               "B": "#1fa11f",
-               "C": "#107df7",
-               "D": "#fa2e12",
-               "E": "#181818"}
-
-    index = trackname.split("-")[0][0]
-    try:
-        return mapping[index]
-    except KeyError:
-        return None
+def trackname_to_color(trackname="", nadeo=True):
+    if nadeo:
+        mapping = {"A": "#c1c1c1",
+                   "B": "#1fa11f",
+                   "C": "#107df7",
+                   "D": "#fa2e12",
+                   "E": "#181818"}
+        try:
+            return mapping[trackname[0]]
+        except KeyError or IndexError: pass
+    return "orange"
 
 
 

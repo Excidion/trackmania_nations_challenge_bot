@@ -7,26 +7,27 @@ from utils import load_data, load_medal_times
 
 def calculate_complete_data():
     raw_data = load_data()
-    nadeo_medals = load_medal_times()
+    medals = load_medal_times()
     individual_records = get_individual_records(raw_data)
-    data = substitute_missing_times(individual_records, nadeo_medals)
+    data = substitute_missing_times(individual_records, medals)
     data = sort_by_track_and_tracks_by_date(data)
+    data.groupby("Player")["Time"].sum()
     return data
 
 
 def sort_by_track_and_tracks_by_date(data):
-    track_min_dates = data.dropna().groupby("Track")["Date"].min()
+    track_min_dates = data.dropna().groupby("track_id")["Date"].min()
     track_order = track_min_dates.apply(lambda x: x.isocalendar()[0:2]).sort_values()
-    ordered_data = data.set_index("Track").loc[track_order.index].reset_index()
+    ordered_data = data.set_index("track_id").loc[track_order.index].reset_index()
     return ordered_data
 
 def substitute_missing_times(data, medals, remove_unknown=True):
     all_players = data["Player"].unique()
 
-    for track, track_data in data.groupby("Track"):
+    for track, track_data in data.groupby("track_id"):
         if track not in medals.index.values: # track's medals not in database
             if remove_unknown:
-                data = data.loc[data["Track"] != track]
+                data = data.loc[data["track_id"] != track]
             continue
 
         players_with_time = track_data["Player"].unique()
@@ -42,27 +43,29 @@ def substitute_missing_times(data, medals, remove_unknown=True):
             slower_medals = medals.loc[track].where(medals.loc[track] == medals.loc[track].max()).dropna()
 
         for player in players_without_time:
-            substitute_data = {"Track": track,
-                               "Date": None,
-                               "Player": player,
-                               "Time": slower_medals.min(),
-                               "Origin": slower_medals.idxmin()}
+            substitute_data = {
+                "track_id": track,
+                "Date": None,
+                "Player": player,
+                "Time": slower_medals.min(),
+                "Origin": slower_medals.idxmin(),
+            }
             data = data.append(substitute_data, ignore_index=True)
 
-    return data.sort_values("Track").reset_index(drop=True)
+    return data.sort_values("track_id").reset_index(drop=True)
 
 
 def get_current_track_data(data):
-    current_track = data.loc[data["Date"] == data["Date"].dropna().max(), "Track"].values[0]
-    return data[data["Track"] == current_track].copy()
+    current_track = data.loc[data["Date"] == data["Date"].dropna().max(), "track_id"].values[0]
+    return data[data["track_id"] == current_track].copy()
 
 def get_individual_records(data):
     return data.groupby("Player").apply(get_track_records).reset_index(drop=True)
 
 
 def get_track_records(data):
-    return data.groupby("Track").min(key="Time").reset_index()
+    return data.groupby("track_id").min(key="Time").reset_index()
 
 
 def get_standings(data):
-    return data.groupby("Player").sum()["Time"].sort_values(ascending=False)
+    return data.groupby("Player")["Time"].sum().sort_values(ascending=False)

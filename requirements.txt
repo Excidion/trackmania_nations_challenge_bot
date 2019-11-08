@@ -3,4 +3,3 @@ lxml
 matplotlib
 pymysql
 python-telegram-bot
-glob2
