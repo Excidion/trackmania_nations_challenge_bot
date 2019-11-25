@@ -2,10 +2,11 @@ import configparser
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, MessageHandler, BaseFilter, Filters, ConversationHandler
 from datetime import datetime
+import os
 
 from messages import get_ladder_as_html
 from plots import timedelta_to_string
-from utils import get_player_name, set_account_to_player_mapping, load_total_standings_plot
+from utils import get_player_name, set_account_to_player_mapping
 
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -139,10 +140,16 @@ class TelegramBot():
             chat_id = GROUPCHAT_ID,
             text = "And this is the influence on the total rankings:",
         )
-        self.updater.bot.send_photo(
-            chat_id = GROUPCHAT_ID,
-            photo = load_total_standings_plot(),
+        path = os.path.join(
+            config.get("LOCAL_STORAGE", "plot_dir"),
+            config.get("LOCAL_STORAGE", "total_standings")
         )
+        with open(path, "rb") as file:
+            self.updater.bot.send_photo(
+                chat_id = GROUPCHAT_ID,
+                photo = file,
+            )
+
         print("Posted results to groupchat.")
 
 
@@ -154,9 +161,12 @@ class TelegramBot():
         update.message.reply_text(str(update.message.chat_id))
 
     def print_plot(self, update, context):
-        webserver = config.get("DATA_SOURCES", "WEBSERVER")
-        filename = config.get("SAVE_POINTS", "CURRENT_PLOT")
-        update.message.reply_photo(photo=load_total_standings_plot())
+        path = os.path.join(
+            config.get("LOCAL_STORAGE", "plot_dir"),
+            config.get("LOCAL_STORAGE", "total_standings")
+        )
+        with open(path, "rb") as file:
+            update.message.reply_photo(photo=file)
 
     def print_website_link(self, update, context):
         webserver = config.get("DATA_SOURCES", "WEBSERVER")

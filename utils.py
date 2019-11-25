@@ -12,16 +12,6 @@ config.read("config.ini")
 
 
 
-
-def load_total_standings_plot():
-    path = os.path.join(
-        config.get("LOCAL_STORAGE", "plot_dir"),
-        config.get("LOCAL_STORAGE", "total_standings")
-    )
-    with open(path, "rb") as file:
-        return file.read()
-
-
 def get_player_name(account_name):
     account_to_player_map = get_acoount_to_player_map()
     try:

@@ -111,7 +111,7 @@ def plot_total_standings(data, to_file=True, backup_name=None):
     # save & close
     if not backup_name == None:
         fig.savefig(
-            os.path.join(config.get("LOCAL_STORAGE", "plot_dir"), f"{filename}.pdf"),
+            os.path.join(config.get("LOCAL_STORAGE", "plot_dir"), f"{backup_name}.pdf"),
             bbox_inches = "tight",
     )
     if to_file:
