@@ -2,17 +2,24 @@ import pandas as pd
 from datetime import datetime, timedelta
 import os
 import pymysql
-import configparser
+from configparser import ConfigParser
 from glob import glob
 import pickle
 
-config = configparser.ConfigParser()
+
+config = ConfigParser()
 config.read("config.ini")
 
-PN_MAP_SP = config.get("SAVE_POINTS", "PLAYER_NAME_MAPPING")
 
 
 
+def load_total_standings_plot():
+    path = os.path.join(
+        config.get("LOCAL_STORAGE", "plot_dir"),
+        config.get("LOCAL_STORAGE", "total_standings")
+    )
+    with open(path, "rb") as file:
+        return file.read()
 
 
 def get_player_name(account_name):
@@ -25,13 +32,13 @@ def get_player_name(account_name):
 def set_account_to_player_mapping(account_name, player_name):
     account_to_player_map = get_acoount_to_player_map()
     account_to_player_map.loc[account_name] = player_name
-    account_to_player_map.to_pickle(PN_MAP_SP)
+    account_to_player_map.to_pickle(config.get("LOCAL_STORAGE", "name_map"))
     print(f"TM-Account \"{account_name}\" has been mapped to \"{player_name}\".")
 
 
 def get_acoount_to_player_map():
     try: # already some mapping saved in the past
-        return pd.read_pickle(PN_MAP_SP)
+        return pd.read_pickle(config.get("LOCAL_STORAGE", "name_map"))
     except FileNotFoundError: # no player names mapped in the past
         return pd.Series()
 
@@ -51,9 +58,6 @@ def load_data():
     return times_table
 
 
-
-
-
 def access_SQL_database(query):
     db = pymysql.connect(
         host = config.get("SQL_LOGIN", "host"),
@@ -67,8 +71,6 @@ def access_SQL_database(query):
     result = cur.fetchall()
     db.close()
     return result
-
-
 
 
 def load_medal_times():
@@ -99,22 +101,6 @@ def load_medal_times():
     time_cols = ["Author", "Gold", "Silver", "Bronze"]
     data[time_cols] = data[time_cols].applymap(lambda x: timedelta(milliseconds=x))
     return data
-
-
-def string_to_timedelta(string):
-    try:
-        time = datetime.strptime(string, "%M'%S\"%f")
-    except ValueError: # string contains information about hours
-        time = datetime.strptime(string, "%Hh%M'%S\"%f")
-
-    delta = timedelta(
-        hours = time.hour,
-        minutes = time.minute,
-        seconds = time.second,
-        microseconds = time.microsecond,
-    )
-    return delta
-
 
 
 

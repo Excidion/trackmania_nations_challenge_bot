@@ -4,7 +4,8 @@ import matplotlib.ticker as ticker
 import pandas as pd
 from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
-import configparser
+from configparser import ConfigParser
+import os
 
 from calculations import get_standings
 from utils import get_player_name
@@ -12,16 +13,14 @@ from utils import get_player_name
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning) # warning with tight layout
 
-config = configparser.ConfigParser()
+
+config = ConfigParser()
 config.read("config.ini")
 
-PLOT_DIR = config["SAVE_POINTS"]["PLOT_DIR"]
-CURRENT_PLOT_NAME = config["SAVE_POINTS"]["CURRENT_PLOT"]
 
 
 
-
-def plot_total_standings(data, filename=None):
+def plot_total_standings(data, to_file=True, backup_name=None):
     width = data["track_id"].nunique() + 3
     height = data["Player"].nunique()
     fig, ax = plt.subplots(figsize=(width, height))
@@ -110,16 +109,25 @@ def plot_total_standings(data, filename=None):
 
 
     # save & close
-    if not filename == None:
-        fig.savefig(f"{PLOT_DIR}/{filename}.pdf", bbox_inches = "tight")
-
-    fig.savefig(f"{PLOT_DIR}/{CURRENT_PLOT_NAME}.png",
-                dpi = 225,
-                transparent = True,
-                bbox_inches = "tight",
-                pad_inches = 0)
-    plt.close(fig)
-
+    if not backup_name == None:
+        fig.savefig(
+            os.path.join(config.get("LOCAL_STORAGE", "plot_dir"), f"{filename}.pdf"),
+            bbox_inches = "tight",
+    )
+    if to_file:
+        fig.savefig(
+            os.path.join(
+                config.get("LOCAL_STORAGE", "plot_dir"),
+                config.get("LOCAL_STORAGE", "total_standings")
+            ),
+            dpi = 225,
+            transparent = True,
+            bbox_inches = "tight",
+            pad_inches = 0,
+        )
+        plt.close(fig)
+    else:
+        return plt.gca()
 
 
 @ticker.FuncFormatter

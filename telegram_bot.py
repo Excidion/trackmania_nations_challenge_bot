@@ -5,7 +5,7 @@ from datetime import datetime
 
 from messages import get_ladder_as_html
 from plots import timedelta_to_string
-from utils import get_player_name, set_account_to_player_mapping
+from utils import get_player_name, set_account_to_player_mapping, load_total_standings_plot
 
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -55,8 +55,8 @@ class TelegramBot():
             "chat_id": self.print_chat_id,
             "ladder": self.print_ladder,
             "week": self.print_ladder,
-            "total": self.print_plot_link,
-            "graph": self.print_plot_link,
+            "total": self.print_plot,
+            "graph": self.print_plot,
             "link": self.print_website_link,
         }
         PRIVATE_COMMAND_MAP = {
@@ -125,9 +125,7 @@ class TelegramBot():
         self.updater.bot.send_message(chat_id=GROUPCHAT_ID, text=text)
 
     def send_results_to_groupchat(self):
-        webserver = config.get("DATA_SOURCES", "WEBSERVER")
         filename = config.get("SAVE_POINTS", "CURRENT_PLOT")
-        ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # timestamp to avoid using cached old thumbnails
         self.updater.bot.send_message(
             chat_id = GROUPCHAT_ID,
             text = "Here are this weeks results!",
@@ -143,7 +141,7 @@ class TelegramBot():
         )
         self.updater.bot.send_photo(
             chat_id = GROUPCHAT_ID,
-            photo = f"https://{webserver}/{filename}.png?a={ts}",
+            photo = load_total_standings_plot(),
         )
         print("Posted results to groupchat.")
 
@@ -155,25 +153,21 @@ class TelegramBot():
     def print_chat_id(self, update, context):
         update.message.reply_text(str(update.message.chat_id))
 
-    def print_plot_link(self, update, context):
+    def print_plot(self, update, context):
         webserver = config.get("DATA_SOURCES", "WEBSERVER")
         filename = config.get("SAVE_POINTS", "CURRENT_PLOT")
-        ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") # timestamp to avoid using cached old thumbnails
-        update.message.reply_photo(photo=f"https://{webserver}/{filename}.png?a={ts}")
+        update.message.reply_photo(photo=load_total_standings_plot())
 
     def print_website_link(self, update, context):
         webserver = config.get("DATA_SOURCES", "WEBSERVER")
         update.message.reply_text(f"https://{webserver}")
 
     def print_join_instructions(self, update, context):
-        webserver = config.get("DATA_SOURCES", "WEBSERVER")
-        server_name = config.get("DATA_SOURCES", "TM_SERVER_NAME")
-        pwd = config.get("DATA_SOURCES", "TM_SERVER_PWD")
-        id = update.message.chat_id
+        server_name  = config.get("GAME_SERVER", "accout")
+        pwd = config.get("GAME_SERVER", "password")
         update.message.reply_text("To join the server you have to enter the following link to TrackMania internal browser:")
         update.message.reply_text(f"tmtp://#addfavourite={server_name}")
-        update.message.reply_photo(photo=f"https://{webserver}/tm_browser.png")
-        update.message.reply_photo(photo=f"https://{webserver}/tm_addfavo.png")
+        update.message.reply_photo(photo=None) # TODO
         update.message.reply_text("This will add the server to your list of favourites.")
         update.message.reply_text(f"The servers password is \"{pwd}\".")
 
@@ -186,11 +180,13 @@ class TelegramBot():
                 "/link - Shows the link to the website.",
                 "\nThe following commands can just be handled in private messages with me:",
                 "/server - Shows you how to connect to the game server.",
-                "/register - Make your name appear in the rankings. Recommended, if you haven't done this yet."
+                "/register - Make your name appear in the rankings. Recommended, if you haven't done this yet.",
+                "/help - Shows this overview.",
             ])
         )
 
     def print_ladder(self, update, context):
+        # TODO markdown?
         update.message.reply_text(get_ladder_as_html(), parse_mode="HTML")
 
 
