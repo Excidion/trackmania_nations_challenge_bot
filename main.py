@@ -41,9 +41,9 @@ def weekly_results_process(chatbot):
     while True:
         try:
             if not current_week == get_week_number():
+                current_week = get_week_number()
                 chatbot.send_groupchat_message("Rien ne va plus!")
                 chatbot.send_results_to_groupchat()
-                current_week = get_week_number()
         except Exception as e:
             print("weekly_results_process:", e)
 
