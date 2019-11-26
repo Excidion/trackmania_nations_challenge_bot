@@ -2,7 +2,7 @@ import configparser
 import time
 import os
 from datetime import datetime
-from threading import Thread
+from multiprocessing import Process
 
 from utils import get_last_SQL_update, get_player_name
 from calculations import calculate_complete_data, get_current_track_data
@@ -23,15 +23,15 @@ def main():
 
     chatbot = TelegramBot()
     chatbot.start_bot()
-    threads = [Thread(target=p, args=[chatbot]) for p in [weekly_results_process, live_updates_process]]
-    [t.start() for t in threads]
-    
+    procs = [Process(target=p, args=[chatbot]) for p in [weekly_results_process, live_updates_process]]
+    [p.start() for p in procs]
+
     try:
         while True:
             pass
     except KeyboardInterrupt:
         # kill background proces
-        [t.kill() for t in threads]
+        [p.kill() for p in procs]
         chatbot.stop_bot()
         raise SystemExit
 
