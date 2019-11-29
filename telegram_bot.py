@@ -106,7 +106,7 @@ class TelegramBot():
 
 
     # send this to every user that joins the group
-    def welcome_action(self, bot, update):
+    def welcome_action(self, update, context):
         for new_user in update.message.new_chat_members:
             bot.send_message(chat_id=new_user.id, text=OPENING_MESSAGE)
 
