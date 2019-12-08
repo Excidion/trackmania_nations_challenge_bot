@@ -126,7 +126,6 @@ class TelegramBot():
         self.updater.bot.send_message(chat_id=GROUPCHAT_ID, text=text)
 
     def send_results_to_groupchat(self):
-        filename = config.get("SAVE_POINTS", "CURRENT_PLOT")
         self.updater.bot.send_message(
             chat_id = GROUPCHAT_ID,
             text = "Here are this weeks results!",
