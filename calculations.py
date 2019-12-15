@@ -23,6 +23,7 @@ def sort_by_track_and_tracks_by_date(data):
 
 def substitute_missing_times(data, medals, remove_unknown=True):
     all_players = data["Player"].unique()
+    track_id_map = data.set_index("track_id")["Track"].drop_duplicates()
 
     for track, track_data in data.groupby("track_id"):
         if track not in medals.index.values: # track's medals not in database
@@ -37,7 +38,8 @@ def substitute_missing_times(data, medals, remove_unknown=True):
             continue
 
         slowest_time = track_data["Time"].max()
-        slower_medals = medals.loc[track].where(medals.loc[track] > slowest_time).dropna()
+        cols = ["Author", "Gold", "Silver", "Bronze"]
+        slower_medals = medals.loc[track, cols].where(medals.loc[track, cols] > slowest_time).dropna()
 
         if len(slower_medals) == 0: # nobody has beaten any medal time / not all have beaten Bronze
             slower_medals = medals.loc[track].where(medals.loc[track] == medals.loc[track].max()).dropna()
@@ -45,10 +47,11 @@ def substitute_missing_times(data, medals, remove_unknown=True):
         for player in players_without_time:
             substitute_data = {
                 "track_id": track,
+                "Track": track_id_map.loc[track],
                 "Date": None,
                 "Player": player,
                 "Time": slower_medals.min(),
-                "Origin": slower_medals.idxmin(),
+                "Origin": slower_medals[slower_medals == slower_medals.min()].index[0],
             }
             data = data.append(substitute_data, ignore_index=True)
 

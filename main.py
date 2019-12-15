@@ -1,5 +1,5 @@
 import configparser
-import time
+from time import sleep
 import os
 from datetime import datetime
 from multiprocessing import Process
@@ -38,14 +38,11 @@ def main():
 
 def weekly_results_process(chatbot):
     current_week = get_week_number()
-    while True:
-        try:
-            if not current_week == get_week_number():
-                current_week = get_week_number()
-                chatbot.send_groupchat_message("Rien ne va plus!")
-                chatbot.send_results_to_groupchat()
-        except Exception as e:
-            print("weekly_results_process:", e)
+    while not sleep(1):
+        if not current_week == get_week_number():
+            current_week = get_week_number()
+            chatbot.send_groupchat_message("Rien ne va plus!")
+            chatbot.send_results_to_groupchat()
 
 def get_week_number():
     return datetime.now().isocalendar()[1]
@@ -53,18 +50,16 @@ def get_week_number():
 
 def live_updates_process(chatbot):
     while True:
-        try:
-            last_SQL_update = get_last_SQL_update()
-            data = calculate_complete_data()
-            renew_plot(data)
-            # wait until there are new entries to the database
-            while last_SQL_update == get_last_SQL_update():
-                time.sleep(1) # check every second
-            # create and send messages based on changes
-            for message in compare_data_and_create_info_messages(data):
-                chatbot.send_groupchat_message(message)
-        except Exception as e:
-            print("live_updates_process:", e)
+        last_SQL_update = get_last_SQL_update()
+        data = calculate_complete_data()
+        renew_plot(data)
+        data.to_pickle("x.p")
+        # wait until there are new entries to the database
+        while last_SQL_update == get_last_SQL_update():
+            sleep(1) # check every second
+        # create and send messages based on changes
+        for message in compare_data_and_create_info_messages(data):
+            chatbot.send_groupchat_message(message)
 
 def renew_plot(data):
     year, week = data.dropna()["Date"].max().isocalendar()[0:2]

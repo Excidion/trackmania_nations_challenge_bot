@@ -71,21 +71,11 @@ def load_medal_times():
         columns = [
             "Id",
             "Name",
-            "AuthorTime",
-            "GoldTime",
-            "SilverTime",
-            "BronzeTime",
+            "Author",
+            "Gold",
+            "Silver",
+            "Bronze",
         ],
-    )
-    data.rename(
-        {
-            "AuthorTime": "Author",
-            "GoldTime": "Gold",
-            "SilverTime": "Silver",
-            "BronzeTime": "Bronze"
-        },
-        axis = "columns",
-        inplace = True,
     )
     data.set_index("Id", inplace=True)
     time_cols = ["Author", "Gold", "Silver", "Bronze"]
