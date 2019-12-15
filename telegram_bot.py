@@ -214,14 +214,10 @@ class TelegramBot():
         return 0
 
     def store_name(self, update, context):
-        webserver = config.get("DATA_SOURCES", "WEBSERVER")
         context.user_data["name"] = update.message.text
         update.message.reply_text(
             text = "Next up I need your TrackMania account name.\nYou can see your account name when logging into TrackMania.",
         )
-        try:
-            update.message.reply_photo(photo=f"https://{webserver}/register_instruction.png")
-        except: pass
         return 1
 
     def store_account(self, update, context):
