@@ -111,13 +111,13 @@ def plot_total_standings(data, to_file=True, backup_name=None):
     # save & close
     if not backup_name == None:
         fig.savefig(
-            os.path.join(config.get("LOCAL_STORAGE", "plot_dir"), f"{backup_name}.pdf"),
+            os.path.join(config.get("LOCAL_STORAGE", "dir"), f"{backup_name}.pdf"),
             bbox_inches = "tight",
     )
     if to_file:
         fig.savefig(
             os.path.join(
-                config.get("LOCAL_STORAGE", "plot_dir"),
+                config.get("LOCAL_STORAGE", "dir"),
                 config.get("LOCAL_STORAGE", "total_standings")
             ),
             dpi = 225,
@@ -170,22 +170,25 @@ def timedelta_to_string(td, add_plus=False):
 
 
 def track_standings_to_color(track_data):
-    mapping = {0: "gold",
-               1: "silver",
-               2: "goldenrod"}
-
+    mapping = {
+        0: "gold",
+        1: "silver",
+        2: "goldenrod",
+    }
     track_standings = get_standings(track_data)[::-1].reset_index()
     track_standings_index = [track_standings[track_standings["Player"] == player].index[0] for player in track_data.index]
     return [mapping[index] if index in mapping.keys() else "white" for index in track_standings_index]
 
 
 def trackname_to_color(trackname="", nadeo=True):
+    mapping = {
+        "A": "#c1c1c1",
+        "B": "#1fa11f",
+        "C": "#107df7",
+        "D": "#fa2e12",
+        "E": "#181818",
+    }
     if nadeo:
-        mapping = {"A": "#c1c1c1",
-                   "B": "#1fa11f",
-                   "C": "#107df7",
-                   "D": "#fa2e12",
-                   "E": "#181818"}
         try:
             return mapping[trackname[0]]
         except KeyError or IndexError: pass

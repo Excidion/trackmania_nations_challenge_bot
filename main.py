@@ -17,9 +17,9 @@ def main():
     config = configparser.ConfigParser()
     config.read("config.ini")
 
-    PLOT_DIR = config.get("LOCAL_STORAGE", "plot_dir")
-    if not os.path.exists(PLOT_DIR):
-        os.makedirs(PLOT_DIR)
+    DIR = config.get("LOCAL_STORAGE", "dir")
+    if not os.path.exists(DIR):
+        os.makedirs(DIR)
 
     chatbot = TelegramBot()
     chatbot.start_bot()
@@ -53,7 +53,6 @@ def live_updates_process(chatbot):
         last_SQL_update = get_last_SQL_update()
         data = calculate_complete_data()
         renew_plot(data)
-        data.to_pickle("x.p")
         # wait until there are new entries to the database
         while last_SQL_update == get_last_SQL_update():
             sleep(1) # check every second
