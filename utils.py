@@ -22,13 +22,13 @@ def get_player_name(account_name):
 def set_account_to_player_mapping(account_name, player_name):
     account_to_player_map = get_acoount_to_player_map()
     account_to_player_map.loc[account_name] = player_name
-    account_to_player_map.to_pickle(config.get("LOCAL_STORAGE", "name_map"))
+    account_to_player_map.to_pickle("name_map.p")
     print(f"TM-Account \"{account_name}\" has been mapped to \"{player_name}\".")
 
 
 def get_acoount_to_player_map():
     try: # already some mapping saved in the past
-        return pd.read_pickle(config.get("LOCAL_STORAGE", "name_map"))
+        return pd.read_pickle("name_map.p")
     except FileNotFoundError: # no player names mapped in the past
         return pd.Series()
 
