@@ -160,8 +160,8 @@ class TelegramBot():
 
     def print_plot(self, update, context):
         path = os.path.join(
-            config.get("LOCAL_STORAGE", "plot_dir"),
-            config.get("LOCAL_STORAGE", "total_standings")
+            config.get("LOCAL_STORAGE", "dir"),
+            config.get("LOCAL_STORAGE", "total_standings"),
         )
         with open(path, "rb") as file:
             update.message.reply_photo(photo=file)
