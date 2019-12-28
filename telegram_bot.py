@@ -58,7 +58,6 @@ class TelegramBot():
             "week": self.print_ladder,
             "total": self.print_plot,
             "graph": self.print_plot,
-            "link": self.print_website_link,
         }
         PRIVATE_COMMAND_MAP = {
             "start": self.help,
@@ -167,16 +166,12 @@ class TelegramBot():
         with open(path, "rb") as file:
             update.message.reply_photo(photo=file)
 
-    def print_website_link(self, update, context):
-        webserver = config.get("DATA_SOURCES", "WEBSERVER")
-        update.message.reply_text(f"https://{webserver}")
 
     def print_join_instructions(self, update, context):
-        server_name  = config.get("GAME_SERVER", "accout")
+        server_name  = config.get("GAME_SERVER", "account")
         pwd = config.get("GAME_SERVER", "password")
         update.message.reply_text("To join the server you have to enter the following link to TrackMania internal browser:")
         update.message.reply_text(f"tmtp://#addfavourite={server_name}")
-        update.message.reply_photo(photo=None) # TODO
         update.message.reply_text("This will add the server to your list of favourites.")
         update.message.reply_text(f"The servers password is \"{pwd}\".")
 
@@ -186,7 +181,6 @@ class TelegramBot():
                 "These are the commands I know and what they do:",
                 "/week - Shows this weeks rankings.",
                 "/total - Shows the graph of the total season rankings.",
-                "/link - Shows the link to the website.",
                 "\nThe following commands can just be handled in private messages with me:",
                 "/server - Shows you how to connect to the game server.",
                 "/register - Make your name appear in the rankings. Recommended, if you haven't done this yet.",
@@ -195,7 +189,6 @@ class TelegramBot():
         )
 
     def print_ladder(self, update, context):
-        # TODO markdown?
         update.message.reply_text(get_ladder_as_html(), parse_mode="HTML")
 
 
