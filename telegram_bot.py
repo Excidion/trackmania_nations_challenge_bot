@@ -168,9 +168,14 @@ class TelegramBot():
 
 
     def print_join_instructions(self, update, context):
+        print("JA")
         server_name  = config.get("GAME_SERVER", "account")
         pwd = config.get("GAME_SERVER", "password")
         update.message.reply_text("To join the server you have to enter the following link to TrackMania internal browser:")
+        with open("instructions/ingame_browser.png", "rb") as file:
+            update.message.reply_photo(photo=file)
+        with open("instructions/add_server.png", "rb") as file:
+            update.message.reply_photo(photo=file)
         update.message.reply_text(f"tmtp://#addfavourite={server_name}")
         update.message.reply_text("This will add the server to your list of favourites.")
         update.message.reply_text(f"The servers password is \"{pwd}\".")
@@ -211,6 +216,8 @@ class TelegramBot():
         update.message.reply_text(
             text = "Next up I need your TrackMania account name.\nYou can see your account name when logging into TrackMania.",
         )
+        with open("instructions/account_name.png", "rb") as file:
+            update.message.reply_photo(photo=file)
         return 1
 
     def store_account(self, update, context):
