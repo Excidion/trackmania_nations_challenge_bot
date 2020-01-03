@@ -168,7 +168,6 @@ class TelegramBot():
 
 
     def print_join_instructions(self, update, context):
-        print("JA")
         server_name  = config.get("GAME_SERVER", "account")
         pwd = config.get("GAME_SERVER", "password")
         update.message.reply_text("To join the server you have to enter the following link to TrackMania internal browser:")

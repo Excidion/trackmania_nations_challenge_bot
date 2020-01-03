@@ -1,7 +1,6 @@
-storage/
 __pycache__/
 *.pyc
+*.png
 *.pdf
 *.pickle
-*.csv
 *.p
