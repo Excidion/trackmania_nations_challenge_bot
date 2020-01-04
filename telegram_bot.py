@@ -47,13 +47,17 @@ class TelegramBot():
             use_context = True,
         )
         dispatcher = self.updater.dispatcher
+        self.filter_participant = UserInGroupChatFilter()
+        self.filter_private_message = UserInGroupChatFilter() & ConversationNotInGroupChatFilter()
 
         # welcome action
         dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, self.welcome_action))
 
+        # setup commands
+        dispatcher.add_handler(CommandHandler("chat_id", self.print_chat_id))
+
         # simple commands
         COMMAND_MAP = {
-            "chat_id": self.print_chat_id,
             "ladder": self.print_ladder,
             "week": self.print_ladder,
             "total": self.print_plot,
@@ -71,7 +75,7 @@ class TelegramBot():
                 CommandHandler(
                     command,
                     COMMAND_MAP[command],
-                    filters = UserInGroupChatFilter(),
+                    filters = self.filter_participant,
                 )
             )
 
@@ -80,7 +84,7 @@ class TelegramBot():
                 CommandHandler(
                     command,
                     PRIVATE_COMMAND_MAP[command],
-                    filters = UserInGroupChatFilter() & ConversationNotInGroupChatFilter(),
+                    filters = self.filter_private_message,
                 )
             )
 
@@ -91,7 +95,7 @@ class TelegramBot():
                 CommandHandler(
                     "register",
                     self.start_registration,
-                    filters = UserInGroupChatFilter() & ConversationNotInGroupChatFilter(),
+                    filters = self.filter_private_message,
                 )
             ],
             states = {
