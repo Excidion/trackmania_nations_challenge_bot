@@ -143,8 +143,8 @@ class TelegramBot():
             text = "And this is the influence on the total rankings:",
         )
         path = os.path.join(
-            config.get("LOCAL_STORAGE", "plot_dir"),
-            config.get("LOCAL_STORAGE", "total_standings")
+            config.get("LOCAL_STORAGE", "dir"),
+            config.get("LOCAL_STORAGE", "total_standings"),
         )
         with open(path, "rb") as file:
             self.updater.bot.send_photo(
