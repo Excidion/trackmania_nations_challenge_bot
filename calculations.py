@@ -33,16 +33,16 @@ def substitute_missing_times(data, medals, remove_unknown=True):
 
         players_with_time = track_data["Player"].unique()
         players_without_time = list(set(all_players) - set(players_with_time))
-
         if len(players_without_time) == 0: # everybody already has a time
             continue
 
         slowest_time = track_data["Time"].max()
         cols = ["Author", "Gold", "Silver", "Bronze"]
         slower_medals = medals.loc[track, cols].where(medals.loc[track, cols] > slowest_time).dropna()
-
         if len(slower_medals) == 0: # nobody has beaten any medal time / not all have beaten Bronze
-            slower_medals = medals.loc[track].where(medals.loc[track] == medals.loc[track].max()).dropna()
+            substitute_time = medals.loc[track, "Bronze"]
+        else: # this should be the regular case
+            substitute_time = slower_medals.min()
 
         for player in players_without_time:
             substitute_data = {
@@ -50,7 +50,7 @@ def substitute_missing_times(data, medals, remove_unknown=True):
                 "Track": track_id_map.loc[track],
                 "Date": None,
                 "Player": player,
-                "Time": slower_medals.min(),
+                "Time": substitute_time,
                 "Origin": slower_medals[slower_medals == slower_medals.min()].index[0],
             }
             data = data.append(substitute_data, ignore_index=True)
