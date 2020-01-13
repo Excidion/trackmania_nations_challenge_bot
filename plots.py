@@ -19,6 +19,14 @@ config.read("config.ini")
 
 
 
+def get_total_standings_plot():
+    path = os.path.join(
+        config.get("LOCAL_STORAGE", "dir"),
+        config.get("LOCAL_STORAGE", "total_standings"),
+    )
+    with open(path, "rb") as file:
+        return file
+
 
 def plot_total_standings(data, to_file=True, backup_name=None):
     width = data["track_id"].nunique() + 3

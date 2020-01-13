@@ -52,6 +52,7 @@ def live_updates_process(chatbot):
         last_SQL_update = get_last_SQL_update()
         data = calculate_complete_data()
         renew_plot(data)
+        renew_ladder(data)
         # wait until there are new entries to the database
         while last_SQL_update == get_last_SQL_update():
             sleep(1) # check every second
@@ -62,6 +63,9 @@ def live_updates_process(chatbot):
 def renew_plot(data):
     year, week = data.dropna()["Date"].max().isocalendar()[0:2]
     plot_total_standings(data, backup_name=f"standings_y{year}_w{week}")
+
+def renew_ladder(data):
+    pass
 
 def compare_data_and_create_info_messages(old_data):
     new_data = calculate_complete_data()
