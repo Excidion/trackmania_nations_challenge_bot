@@ -6,8 +6,7 @@ from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
 from configparser import ConfigParser
 import os
-
-from calculations import get_standings
+from calculations import get_standings, get_current_track_data, get_individual_records
 from utils import get_player_name
 
 import warnings
@@ -18,14 +17,12 @@ config = ConfigParser()
 config.read("config.ini")
 
 
-
 def get_total_standings_plot():
     path = os.path.join(
         config.get("LOCAL_STORAGE", "dir"),
         config.get("LOCAL_STORAGE", "total_standings"),
     )
-    with open(path, "rb") as file:
-        return file
+    return open(path, "rb")
 
 
 def plot_total_standings(data, to_file=True, backup_name=None):
@@ -201,6 +198,53 @@ def trackname_to_color(trackname="", nadeo=True):
             return mapping[trackname[0]]
         except KeyError or IndexError: pass
     return "orange"
+
+
+
+
+def get_ladder():
+    path = os.path.join(
+        config.get("LOCAL_STORAGE", "dir"),
+        config.get("LOCAL_STORAGE", "ladder"),
+    )
+    with open(path, "r") as file:
+        return file.read()
+
+
+def print_ladder(data, style="html"):
+    data = get_current_track_data(data)
+    data = data[data["Origin"] == "Player"]
+    ladder = get_individual_records(data).sort_values(["Time", "Date"], ascending=[False, False]).set_index("Player")["Time"]
+
+    if style == "html":
+        content = ladder_as_html(ladder, data["Track"].unique()[0])
+    elif style == "md":
+        content = ladder_as_md(ladder)
+
+    path = os.path.join(
+        config.get("LOCAL_STORAGE", "dir"),
+        config.get("LOCAL_STORAGE", "ladder"),
+    )
+    with open(path, "w") as file:
+        file.write(content)
+
+def ladder_as_md(ladder):
+    md = "P | Name | Time\n" # title
+    md += ":---:|:--- | ---:\n" # alignment
+    for i, player in enumerate(list(reversed(ladder.index))):
+        md += f"{i+1} | {get_player_name(player)} | {timedelta_to_string(ladder[player])}\n"
+    return md
+
+def ladder_as_html(ladder, track):
+    lines = [track]
+    for i, player in enumerate(list(reversed(ladder.index))):
+        line = f"{i+1}) {get_player_name(player)}: {timedelta_to_string(ladder[player])} "
+        lines.append(line)
+    max_linelength = max([len(line) for line in lines])
+    missing_spaces = [(max_linelength-len(line)) for line in lines]
+    lines = [(spaces*" ").join(line.split(":")) for spaces, line in zip(missing_spaces, lines)]
+    message = "\n".join(lines)
+    return f"<pre>{message}</pre>"
 
 
 

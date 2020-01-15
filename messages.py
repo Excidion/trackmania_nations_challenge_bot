@@ -1,4 +1,4 @@
-from calculations import get_standings, calculate_complete_data, get_current_track_data
+from calculations import get_standings, get_current_track_data
 from utils import get_player_name
 from plots import timedelta_to_string
 
@@ -47,36 +47,3 @@ def info_about_new_times(old_data, new_data):
         message = f"{track}: {get_player_name(player_name)} scored a new record of {new_record}!"
         messages.append(message)
     return messages
-
-
-def get_ladder_as_md(data=None):
-    if data is None:
-        data = get_current_track_data(calculate_complete_data())
-    else:
-        data = get_current_track_data(data)
-    data = data[data["Origin"] == "Player"]
-    ladder = get_standings(data)
-    md = "P | Name | Time\n" # title
-    md += ":---:|:--- | ---:\n" # alignment
-    for i, player in enumerate(list(reversed(ladder.index))):
-        md += f"{i+1} | {et_player_name(player)} | {timedelta_to_string(ladder[player])}\n"
-    return md
-
-def get_ladder_as_html(data=None):
-    if data is None:
-        data = get_current_track_data(calculate_complete_data())
-    else:
-        data = get_current_track_data(data)
-    data = data[data["Origin"] == "Player"]
-    ladder = get_standings(data)
-
-    message_lines = [data["Track"].unique()[0]]
-    for i, player in enumerate(list(reversed(ladder.index))):
-        line = f"{i+1}) {get_player_name(player)}: {timedelta_to_string(ladder[player])} "
-        message_lines.append(line)
-
-    max_linelength = max([len(line) for line in message_lines])
-    missing_spaces = [(max_linelength-len(line)) for line in message_lines]
-    message_lines = [(spaces*" ").join(line.split(":")) for spaces, line in zip(missing_spaces, message_lines)]
-    message = "\n".join(message_lines)
-    return f"<pre>{message}</pre>"

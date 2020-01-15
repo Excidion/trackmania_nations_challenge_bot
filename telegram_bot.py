@@ -3,9 +3,7 @@ from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, MessageHandler, BaseFilter, Filters, ConversationHandler
 from datetime import datetime
 import os
-
-from messages import get_ladder_as_html
-from plots import timedelta_to_string, get_total_standings_plot
+from plots import timedelta_to_string, get_total_standings_plot, get_ladder
 from utils import get_player_name, set_account_to_player_mapping
 
 config = configparser.ConfigParser()
@@ -58,10 +56,8 @@ class TelegramBot():
 
         # simple commands
         COMMAND_MAP = {
-            "ladder": self.print_ladder,
             "week": self.print_ladder,
             "total": self.print_plot,
-            "graph": self.print_plot,
         }
         PRIVATE_COMMAND_MAP = {
             "start": self.help,
@@ -135,7 +131,7 @@ class TelegramBot():
         )
         self.updater.bot.send_message(
             chat_id = GROUPCHAT_ID,
-            text = get_ladder_as_html(),
+            text = get_ladder(),
             parse_mode = "HTML",
         )
         self.updater.bot.send_message(
@@ -146,7 +142,6 @@ class TelegramBot():
             chat_id = GROUPCHAT_ID,
             photo = get_total_standings_plot(),
         )
-
         print("Posted results to groupchat.")
 
 
@@ -187,7 +182,7 @@ class TelegramBot():
         )
 
     def print_ladder(self, update, context):
-        update.message.reply_text(get_ladder_as_html(), parse_mode="HTML")
+        update.message.reply_text(get_ladder(), parse_mode="HTML")
 
 
     # commands for advanced conversations
