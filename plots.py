@@ -25,32 +25,35 @@ def get_total_standings_plot():
     return open(path, "rb")
 
 
-def plot_total_standings(data, to_file=True, backup_name=None):
+def plot_total_standings(data, to_file=True, backup_name=None, drop_inactive=True):
+    if drop_inactive:
+        driven_tracks = data[data["Origin"] == "Player"].groupby("Player").size()
+        inactive = driven_tracks[driven_tracks <= 0.5*data["track_id"].nunique()].index
+        data = data[~data["Player"].isin(inactive)]
+
     width = data["track_id"].nunique() + 3
     height = data["Player"].nunique()
     fig, ax = plt.subplots(figsize=(width, height))
 
+    # arrange players by total standings
     season_standings = get_standings(data)
-
-    # preparing for mutiple bar alignment
     bar_alignment = pd.Series({p:timedelta(0) for p in season_standings.index}, name="Time")
 
     for track, track_data in data.groupby("track_id", sort=False):
         # order subset by total times
         track_data = track_data.set_index("Player").loc[season_standings.index]
+        # general track info
         trackname = track_data["Track"].iloc[0]
-        nadeo = track_data["author"].iloc[0] == "Nadeo"
+        nadeo = track_data["author"].iloc[0] == "Nadeo" # check if authoer is Nadeo track
 
-        # colored barplots for each player & track
+        # colored barplots for each player
         bars = ax.barh(y = track_data.index,
                        width = track_data["Time"].apply(timedelta.total_seconds),
                        left = bar_alignment.apply(timedelta.total_seconds),
                        color = trackname_to_color(trackname, nadeo),
                        edgecolor = fig.patch.get_facecolor())
-
         # adding up times of plotted track times for following bar plots alignment
         bar_alignment += track_data["Time"]
-
 
         # labeling bars with time information
         for i, bar in enumerate(bars):
@@ -58,41 +61,53 @@ def plot_total_standings(data, to_file=True, backup_name=None):
                 label = timedelta_to_string(track_data["Time"][i])
             else: # no time was set by player
                 label = track_data["Origin"][i] # label with medal name
-
-            # label each bar
             ax.text(y = bar.get_y() + bar.get_height()/2,
                     x = bar.get_x() + bar.get_width()/2 ,
                     s = label,
                     horizontalalignment = "center",
                     verticalalignment = "center",
-                    color = fig.patch.get_facecolor())
+                    color = fig.patch.get_facecolor(),
+            )
 
-
-        # labeling groups of bars with track names
-        ax.text(y = bar.get_y() + bar.get_height()*1.5,
-                x = bar.get_x() + bar.get_width()/2,
-                s = trackname.split("-")[0] if nadeo else trackname,
-                color = trackname_to_color(trackname, nadeo),
-                verticalalignment = "bottom",
-                horizontalalignment = "center")
-
+        # labeling column of bars with track name
+        ax.text(
+            y = bar.get_y() + bar.get_height()*1.5,
+            x = bar.get_x() + bar.get_width()/2,
+            s = "\n".join(trackname.split("-")), # make - to linebreak
+            color = trackname_to_color(trackname, nadeo),
+            verticalalignment = "center",
+            horizontalalignment = "center",
+        )
 
     # plot differences in total time
     for i, bar in enumerate(bars):
-        ax.text(y = bar.get_y() + bar.get_height()/2,
-                x = bar.get_x() + bar.get_width(),
-                s = timedelta_to_string(season_standings.diff(-1)[i], add_plus=True),
-                color = "grey",
-                verticalalignment = "center",
-                horizontalalignment = "left")
+        ax.text(
+            y = bar.get_y() + bar.get_height()/2,
+            x = bar.get_x() + bar.get_width(),
+            s = timedelta_to_string(season_standings.diff(-1)[i], add_plus=True),
+            color = "grey",
+            verticalalignment = "center",
+            horizontalalignment = "left",
+        )
 
 
     # axis decorating
-    plt.yticks(track_data.index, track_data.index.map(get_player_name))
+    plt.yticks(
+        track_data.index,
+        track_data.reset_index().iloc[::-1].index.map(lambda x: f"{x+1}) ") + track_data.index.map(get_player_name),
+        horizontalalignment = "left",
+    )
     ax.set_xlabel("Total Time")
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
+    # y axis tick label alignment
+    plt.draw()  # this is needed because get_window_extent needs a renderer to work
+    yax = ax.get_yaxis()
+    pad = max(tick.label.get_window_extent().width for tick in yax.majorTicks)
+    yax.set_tick_params(pad=pad)
+
+    # x tick labels
     max_time = season_standings.max().total_seconds()
     if max_time > 2*60:
         major_ticks = 60
@@ -106,12 +121,10 @@ def plot_total_standings(data, to_file=True, backup_name=None):
     else:
         major_ticks = 10
         minor_ticks = 1
-
     ax.xaxis.set_major_locator(ticker.MultipleLocator(major_ticks))
     ax.xaxis.set_minor_locator(ticker.MultipleLocator(minor_ticks))
     ax.xaxis.set_major_formatter(timedelta_formatter)
     fig.tight_layout()
-
 
     # save & close
     if not backup_name == None:
