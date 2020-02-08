@@ -251,11 +251,11 @@ def ladder_as_md(ladder):
 def ladder_as_html(ladder, track):
     lines = [track]
     for i, player in enumerate(list(reversed(ladder.index))):
-        line = f"{i+1}) {get_player_name(player)}: {timedelta_to_string(ladder[player])} "
+        line = f"{i+1}) {get_player_name(player)}~ {timedelta_to_string(ladder[player])} "
         lines.append(line)
     max_linelength = max([len(line) for line in lines])
     missing_spaces = [(max_linelength-len(line)) for line in lines]
-    lines = [(spaces*" ").join(line.split(":")) for spaces, line in zip(missing_spaces, lines)]
+    lines = [(spaces*" ").join(line.split("~")) for spaces, line in zip(missing_spaces, lines)]
     message = "\n".join(lines)
     return f"<pre>{message}</pre>"
 
