@@ -26,7 +26,7 @@ def main():
     [p.start() for p in procs]
 
     try:
-        while True:
+        while not sleep(1):
             pass
     except KeyboardInterrupt:
         [p.kill() for p in procs]
