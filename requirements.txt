@@ -1,5 +1,5 @@
-pandas
-lxml
-matplotlib
-pymysql
-python-telegram-bot
+pandas==0.25.3
+lxml==4.4.1
+matplotlib==3.1.1
+PyMySQL==0.9.3
+python-telegram-bot==12.2.0
