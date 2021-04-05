@@ -4,7 +4,6 @@ import os
 import pymysql
 from configparser import ConfigParser
 from glob import glob
-import pickle
 
 
 config = ConfigParser()
@@ -13,28 +12,31 @@ config.read("config.ini")
 
 
 def get_player_name(account_name):
-    account_to_player_map = get_acoount_to_player_map()
+    registrations = get_registration_table()
     try:
-        return account_to_player_map[account_name]
+        return registrations.loc[account_name, "name"]
     except KeyError:
         return "N/A"
 
-def set_account_to_player_mapping(account_name, player_name):
-    account_to_player_map = get_acoount_to_player_map()
-    account_to_player_map.loc[account_name] = player_name
-    account_to_player_map.to_pickle(get_player_name_map_path())
+def register_player(account_name, player_name, telegram_id=None):
+    registrations = get_registration_table()
+    registrations.loc[account_name, "name"] = player_name
+    registrations.loc[account_name, "telegram_id"] = telegram_id
+    registrations.to_csv(get_registration_table_path())
     print(f"TM-Account \"{account_name}\" has been mapped to \"{player_name}\".")
 
-def get_acoount_to_player_map():
-    try: # already some mapping saved in the past
-        return pd.read_pickle(get_player_name_map_path())
-    except FileNotFoundError: # no player names mapped in the past
-        return pd.Series()
+def get_registration_table():
+    try: # already some data saved in the past
+        registrations = pd.read_csv(get_registration_table_path())
+    except FileNotFoundError: # no data saved in the past
+        registrations = pd.DataFrame(columns=["nadeo_account", "name", "telegram_id"])
+    finally:
+        return registrations.set_index("nadeo_account")
 
-def get_player_name_map_path():
+def get_registration_table_path():
     return os.path.join(
         config.get("LOCAL_STORAGE", "dir"),
-        config.get("LOCAL_STORAGE", "name_map"),
+        config.get("LOCAL_STORAGE", "registrations"),
     )
 
 
@@ -106,7 +108,7 @@ if __name__ == "__main__":
     print(f"\nThe account name \"{account_name}\" will be mapped to player \"{player_name}\". \nDo you wish to continue? (y/n)")
     decision = input(player_name + ": ")
     if decision == "y":
-        set_account_to_player_mapping(account_name, player_name)
+        register_player(account_name, player_name)
     elif decision == "n":
         print("\nMapping was not saved.")
     else:

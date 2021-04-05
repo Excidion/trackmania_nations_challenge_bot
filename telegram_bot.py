@@ -4,7 +4,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, BaseFilter, Fi
 from datetime import datetime
 import os
 from plots import timedelta_to_string, get_total_standings_plot, get_ladder
-from utils import get_player_name, set_account_to_player_mapping
+from utils import get_player_name, register_player
 
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -223,7 +223,7 @@ class TelegramBot():
         if reply.lower() == "yes":
             account = context.user_data["account"]
             name =  context.user_data["name"]
-            set_account_to_player_mapping(account, name)
+            register_player(account, name)
             update.message.reply_text(
                 f"TM-Account \"{account}\" has been mapped to \"{name}\".",
                 reply_markup = ReplyKeyboardRemove(),

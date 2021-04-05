@@ -2,6 +2,5 @@ __pycache__/
 *.pyc
 *.png
 *.pdf
-*.pickle
-*.p
+*.csv
 *.cache
