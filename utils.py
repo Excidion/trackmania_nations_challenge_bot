@@ -32,6 +32,7 @@ def get_registration_table():
     except FileNotFoundError: # no data saved in the past
         registrations = pd.DataFrame(columns=["nadeo_account", "name", "telegram_id"])
     finally:
+        registrations["telegram_id"].fillna(0, inplace=True)
         registrations["telegram_id"] = registrations["telegram_id"].astype(int)
         return registrations.set_index("nadeo_account")
 
