@@ -1,5 +1,5 @@
 from calculations import get_standings, get_current_track_data
-from utils import get_player_name
+from utils import get_player_name, get_telegram_name
 from plots import timedelta_to_string
 
 
@@ -28,7 +28,7 @@ def info_about_current_weeks_ladder_changes(old_data, new_data):
         index = new_ladder.loc[player, "index"]
         overtook = new_ladder[(new_ladder["index"] >= index-overtakes) & (new_ladder["index"] < index)].index.values
         have_scored = old_data.loc[old_data["Origin"] == "Player", "Player"].unique()
-        overtook = ", ".join([get_player_name(p) for p in overtook if p in have_scored])
+        overtook = ", ".join([get_telegram_name(p) for p in overtook if p in have_scored])
         new_record = new_data.groupby(["Player", "track_id"])["Time"].min().loc[player, current_track]
         messages.append(
             f"{get_player_name(player)} scored a {timedelta_to_string(new_record)} and overtook {overtook}."

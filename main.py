@@ -57,7 +57,7 @@ def live_updates_process(chatbot):
             sleep(1) # check every second
         # create and send messages based on changes
         for message in compare_data_and_create_info_messages(data):
-            chatbot.send_groupchat_message(message)
+            chatbot.send_groupchat_message(message, parse_mode="MARKDOWN")
 
 def renew_plot(data):
     year, week = data.dropna()["Date"].max().isocalendar()[0:2]

@@ -10,6 +10,22 @@ config = ConfigParser()
 config.read("config.ini")
 
 
+def get_telegram_name(account_name, style="md"):
+    registrations = get_registration_table()
+    if account_name not in registrations.index:
+        return "N/A"
+    elif registrations.loc[account_name, "telegram_id"] == 0:
+        return registrations.loc[account_name, "name"]
+    else:
+        name = registrations.loc[account_name, "name"]
+        id = registrations.loc[account_name, "telegram_id"]
+        if style == "md":
+            return f"[{name}](tg://user?id={id})"
+        elif style == "html":
+            return f'<a href="tg://user?id={id}">{name}</a>'
+        else:
+            raise ValueError("Supported styles are 'md' and 'html'")
+
 
 def get_player_name(account_name):
     registrations = get_registration_table()

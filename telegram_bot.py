@@ -121,9 +121,9 @@ class TelegramBot():
         print("Shutdown initiated.")
         self.updater.stop()
 
-    def send_groupchat_message(self, text):
+    def send_groupchat_message(self, text, **kwargs):
         print("Posted to Groupchat:", text)
-        self.updater.bot.send_message(chat_id=GROUPCHAT_ID, text=text)
+        self.updater.bot.send_message(chat_id=GROUPCHAT_ID, text=text, **kwargs)
 
     def send_results_to_groupchat(self):
         self.updater.bot.send_message(
