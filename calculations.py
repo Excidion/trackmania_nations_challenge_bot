@@ -69,7 +69,7 @@ def get_individual_records(data):
 
 
 def get_track_records(data):
-    return data.groupby("track_id").min(key="Time").reset_index()
+    return data.loc[data.groupby("track_id")["Time"].idxmin()].reset_index()
 
 
 def get_standings(data):
