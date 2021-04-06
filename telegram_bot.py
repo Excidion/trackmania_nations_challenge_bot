@@ -1,6 +1,6 @@
 import configparser
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
-from telegram.ext import Updater, CommandHandler, MessageHandler, BaseFilter, Filters, ConversationHandler
+from telegram.ext import Updater, CommandHandler, MessageHandler, MessageFilter, Filters, ConversationHandler
 from datetime import datetime
 import os
 from plots import timedelta_to_string, get_total_standings_plot, get_ladder
@@ -20,13 +20,13 @@ OPENING_MESSAGE = "\n".join([
 
 
 
-class UserInGroupChatFilter(BaseFilter):
+class UserInGroupChatFilter(MessageFilter):
     def filter(self, message):
         id =  message.from_user.id
         status = message.chat.bot.get_chat_member(chat_id=GROUPCHAT_ID, user_id=id).status
         return status in ["creator", "administrator", "member", "restricted"]
 
-class ConversationNotInGroupChatFilter(BaseFilter):
+class ConversationNotInGroupChatFilter(MessageFilter):
     def filter(self, message):
         chat_id = message.chat.id
         if int(chat_id) == int(GROUPCHAT_ID):
