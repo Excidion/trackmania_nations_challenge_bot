@@ -65,7 +65,7 @@ class TelegramBot():
             "commands": self.print_commands,
             "server": self.print_join_instructions,
         }
-
+        # commnds that can be executed everywhere
         for command in COMMAND_MAP:
             dispatcher.add_handler(
                 CommandHandler(
@@ -74,7 +74,7 @@ class TelegramBot():
                     filters = self.filter_participant,
                 )
             )
-
+        # commands for use in DMs
         for command in PRIVATE_COMMAND_MAP:
             dispatcher.add_handler(
                 CommandHandler(
@@ -84,8 +84,7 @@ class TelegramBot():
                 )
             )
 
-
-        # advanced commands
+        # registration command
         dispatcher.add_handler(ConversationHandler(
             entry_points = [
                 CommandHandler(
@@ -95,9 +94,11 @@ class TelegramBot():
                 )
             ],
             states = {
-                0: [MessageHandler(Filters.text, self.store_name)],
-                1: [MessageHandler(Filters.text, self.store_account)],
-                2: [MessageHandler(Filters.text, self.bool_decision_to_save)]
+                0: [MessageHandler(Filters.text, self.check_suggestion)],
+                1: [MessageHandler(Filters.text, self.store_name)],
+                2: [MessageHandler(Filters.text, self.store_account)],
+                3: [MessageHandler(Filters.text, self.confirm_link)],
+                4: [MessageHandler(Filters.text, self.link_telegram)]
             },
             fallbacks = [CommandHandler("cancel", self.cancel)]),
         )
@@ -187,9 +188,9 @@ class TelegramBot():
 
     # commands for advanced conversations
     def start_registration(self, update, context):
-        user_account = update.message.from_user["username"]
         first_name = update.message.from_user["first_name"]
-        print(f"{user_account} ({first_name}) started registration.")
+        context.user_data["first_name"] = first_name
+        context.user_data["telegram_id"] = update.message.from_user["id"]
         update.message.reply_text(
             text = "\n".join([
                 "I will take you through the registration process. You can abort the process anytime via /cancel ",
@@ -197,16 +198,43 @@ class TelegramBot():
                 "This name will be displayed on all rankings and graphs.",
             ])
         )
+        update.message.reply_text(
+            f"Let me guess, you are {first_name}, right?",
+            reply_markup = ReplyKeyboardMarkup(
+                [[f"Yes, that's me!", "No, use another name."]],
+                one_time_keyboard = True,
+                )
+        )
         return 0
+
+    def check_suggestion(self, update, context):
+        reply = update.message.text.split(",")[0].lower()
+        if reply == "yes":
+            context.user_data["name"] = context.user_data["first_name"]
+            update.message.reply_text(
+                text = "Next up I need your TrackMania account name.\nYou can see your account name when logging into TrackMania.",
+                reply_markup = ReplyKeyboardRemove(),
+            )
+            with open("instructions/account_name.png", "rb") as file:
+                update.message.reply_photo(photo=file)
+            return 2
+        else:
+            update.message.reply_text(
+                text = "What's your first name then?",
+                reply_markup = ReplyKeyboardRemove(),
+            )
+            return 1
+
 
     def store_name(self, update, context):
         context.user_data["name"] = update.message.text
         update.message.reply_text(
             text = "Next up I need your TrackMania account name.\nYou can see your account name when logging into TrackMania.",
+            reply_markup = ReplyKeyboardRemove(),
         )
         with open("instructions/account_name.png", "rb") as file:
             update.message.reply_photo(photo=file)
-        return 1
+        return 2
 
     def store_account(self, update, context):
         account = update.message.text
@@ -216,20 +244,38 @@ class TelegramBot():
             f"I will now link the TrackMania account \"{account}\" to \"{name}\".\nDo you want to proceed?",
             reply_markup = ReplyKeyboardMarkup([["Yes", "No"]], one_time_keyboard=True),
         )
-        return 2
+        return 3
 
-    def bool_decision_to_save(self, update, context):
+    def confirm_link(self, update, context):
         reply = update.message.text
         if reply.lower() == "yes":
-            account = context.user_data["account"]
-            name =  context.user_data["name"]
-            register_player(account, name)
             update.message.reply_text(
-                f"TM-Account \"{account}\" has been mapped to \"{name}\".",
-                reply_markup = ReplyKeyboardRemove(),
+                f"One last thing: Do you want me to remember your Telegram account? This way I can reach you whenever there is something relevant to you.",
+                reply_markup = ReplyKeyboardMarkup(
+                    [["Yes", "No"]],
+                    one_time_keyboard =True
+                    ),
             )
+            return 4
         else:
             update.message.reply_text("Action canceled.", reply_markup=ReplyKeyboardRemove())
+            return ConversationHandler.END
+
+    def link_telegram(self, update, context):
+        account = context.user_data["account"]
+        name =  context.user_data["name"]
+        reply_text = f"TM-Account \"{account}\" has been linked to \"{name}\""
+        if update.message.text.lower() == "yes":
+            telegram_id = context.user_data["telegram_id"]
+            register_player(account, name, telegram_id)
+            reply_text += " and your telegram account."
+        else:
+            register_player(accout, name)
+            reply_text += ". Telegram account has not been linked."
+        update.message.reply_text(
+            reply_text,
+            reply_markup = ReplyKeyboardRemove(),
+        )
         return ConversationHandler.END
 
 

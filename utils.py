@@ -21,7 +21,8 @@ def get_player_name(account_name):
 def register_player(account_name, player_name, telegram_id=None):
     registrations = get_registration_table()
     registrations.loc[account_name, "name"] = player_name
-    registrations.loc[account_name, "telegram_id"] = telegram_id
+    if telegram_id is not None:
+        registrations.loc[account_name, "telegram_id"] = telegram_id
     registrations.to_csv(get_registration_table_path())
     print(f"TM-Account \"{account_name}\" has been mapped to \"{player_name}\".")
 
@@ -31,6 +32,7 @@ def get_registration_table():
     except FileNotFoundError: # no data saved in the past
         registrations = pd.DataFrame(columns=["nadeo_account", "name", "telegram_id"])
     finally:
+        registrations["telegram_id"] = registrations["telegram_id"].astype(int)
         return registrations.set_index("nadeo_account")
 
 def get_registration_table_path():
