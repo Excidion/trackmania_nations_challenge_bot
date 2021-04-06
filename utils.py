@@ -18,11 +18,10 @@ def get_player_name(account_name):
     except KeyError:
         return "N/A"
 
-def register_player(account_name, player_name, telegram_id=None):
+def register_player(account_name, player_name, telegram_id=0):
     registrations = get_registration_table()
     registrations.loc[account_name, "name"] = player_name
-    if telegram_id is not None:
-        registrations.loc[account_name, "telegram_id"] = telegram_id
+    registrations.loc[account_name, "telegram_id"] = telegram_id
     registrations.to_csv(get_registration_table_path())
     print(f"TM-Account \"{account_name}\" has been mapped to \"{player_name}\".")
 
