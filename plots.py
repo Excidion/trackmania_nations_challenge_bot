@@ -215,16 +215,17 @@ def trackname_to_color(trackname="", nadeo=True):
 
 
 
-def get_ladder():
+def get_ladder(flavor="current"):
+    assert flavor in ["current", "total"]
     path = os.path.join(
         config.get("LOCAL_STORAGE", "dir"),
-        config.get("LOCAL_STORAGE", "ladder"),
+        flavor + "-" + config.get("LOCAL_STORAGE", "ladder"),
     )
     with open(path, "r") as file:
         return file.read()
 
 
-def print_ladder(data, style="html"):
+def print_current_ladder(data, style="html"):
     data = get_current_track_data(data)
     data = data[data["Origin"] == "Player"]
     ladder = get_individual_records(data).sort_values(["Time", "Date"], ascending=[False, False]).set_index("Player")["Time"]
@@ -236,10 +237,28 @@ def print_ladder(data, style="html"):
 
     path = os.path.join(
         config.get("LOCAL_STORAGE", "dir"),
-        config.get("LOCAL_STORAGE", "ladder"),
+        "current-" + config.get("LOCAL_STORAGE", "ladder"),
     )
     with open(path, "w") as file:
         file.write(content)
+
+
+def print_total_ladder(data, style="html"):
+    data = get_individual_records(data)
+    ladder = data.groupby("Player")["Time"].sum().sort_values(ascending=False)
+
+    if style == "html":
+        content = ladder_as_html(ladder, "Season Leaderboard")
+    elif style == "md":
+        content = ladder_as_md(ladder)
+
+    path = os.path.join(
+        config.get("LOCAL_STORAGE", "dir"),
+        "total-" + config.get("LOCAL_STORAGE", "ladder"),
+    )
+    with open(path, "w") as file:
+        file.write(content)
+
 
 def ladder_as_md(ladder):
     md = "P | Name | Time\n" # title
@@ -248,8 +267,8 @@ def ladder_as_md(ladder):
         md += f"{i+1} | {get_player_name(player)} | {timedelta_to_string(ladder[player])}\n"
     return md
 
-def ladder_as_html(ladder, track):
-    lines = [track]
+def ladder_as_html(ladder, title):
+    lines = [title]
     for i, player in enumerate(list(reversed(ladder.index))):
         line = f"{i+1}) {get_player_name(player)}~ {timedelta_to_string(ladder[player])} "
         lines.append(line)

@@ -56,8 +56,9 @@ class TelegramBot():
 
         # simple commands
         COMMAND_MAP = {
-            "week": self.print_ladder,
-            "total": self.print_plot,
+            "week": self.print_current_ladder,
+            "total": self.print_total_ladder,
+            "plot": self.print_plot,
         }
         PRIVATE_COMMAND_MAP = {
             "start": self.help,
@@ -132,16 +133,17 @@ class TelegramBot():
         )
         self.updater.bot.send_message(
             chat_id = GROUPCHAT_ID,
-            text = get_ladder(),
+            text = get_ladder("current"),
             parse_mode = "HTML",
         )
         self.updater.bot.send_message(
             chat_id = GROUPCHAT_ID,
             text = "And this is the influence on the total rankings:",
         )
-        self.updater.bot.send_photo(
+        self.updater.bot.send_message(
             chat_id = GROUPCHAT_ID,
-            photo = get_total_standings_plot(),
+            text = get_ladder("total"),
+            parse_mode = "HTML",
         )
         print("Posted results to groupchat.")
 
@@ -174,17 +176,21 @@ class TelegramBot():
             "\n".join([
                 "These are the commands I know and what they do:",
                 "/week - Shows this weeks rankings.",
-                "/total - Shows the graph of the total season rankings.",
+                "/total - Shows the total season rankings.",
+                "/plot - Shows the total season rankings with a bar chart."
                 "\nThe following commands can just be handled in private messages with me:",
                 "/server - Shows you how to connect to the game server.",
                 "/register - Make your name appear in the rankings. Recommended, if you haven't done this yet.",
-                "/help - Shows this overview.",
+                "/help and /start - Show introductory information."
+                "/commands - Shows this overview.",
             ])
         )
 
-    def print_ladder(self, update, context):
-        update.message.reply_text(get_ladder(), parse_mode="HTML")
+    def print_current_ladder(self, update, context):
+        update.message.reply_text(get_ladder("current"), parse_mode="HTML")
 
+    def print_total_ladder(self, update, context):
+        update.message.reply_text(get_ladder("total"), parse_mode="HTML")
 
     # commands for advanced conversations
     def start_registration(self, update, context):

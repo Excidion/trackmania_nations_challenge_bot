@@ -5,7 +5,7 @@ from datetime import datetime
 from multiprocessing import Process
 from utils import get_last_SQL_update, get_player_name
 from calculations import calculate_complete_data, get_current_track_data
-from plots import plot_total_standings, timedelta_to_string, print_ladder
+from plots import plot_total_standings, timedelta_to_string, print_current_ladder, print_total_ladder
 from telegram_bot import TelegramBot
 import messages
 
@@ -64,7 +64,8 @@ def renew_plot(data):
     plot_total_standings(data, backup_name=f"standings_y{year}_w{week}")
 
 def renew_ladder(data):
-    print_ladder(data, style="html")
+    print_current_ladder(data, style="html")
+    print_total_ladder(data, style="html")
 
 def compare_data_and_create_info_messages(old_data):
     new_data = calculate_complete_data()
