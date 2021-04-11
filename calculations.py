@@ -74,3 +74,9 @@ def get_track_records(data):
 
 def get_standings(data):
     return data.groupby("Player")["Time"].sum().sort_values(ascending=False)
+
+
+def drop_inactive_players(data):
+    driven_tracks = data[data["Origin"] == "Player"].groupby("Player").size()
+    inactive = driven_tracks[driven_tracks <= 0.5*data["track_id"].nunique()].index
+    return data[~data["Player"].isin(inactive)]

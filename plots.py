@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
 from configparser import ConfigParser
 import os
-from calculations import get_standings, get_current_track_data, get_individual_records
+from calculations import get_standings, get_current_track_data, get_individual_records, drop_inactive_players
 from utils import get_player_name
 
 import warnings
@@ -27,9 +27,7 @@ def get_total_standings_plot():
 
 def plot_total_standings(data, to_file=True, backup_name=None, drop_inactive=True):
     if drop_inactive:
-        driven_tracks = data[data["Origin"] == "Player"].groupby("Player").size()
-        inactive = driven_tracks[driven_tracks <= 0.5*data["track_id"].nunique()].index
-        data = data[~data["Player"].isin(inactive)]
+        data = drop_inactive_players(data)
 
     width = data["track_id"].nunique() + 3
     height = data["Player"].nunique()
